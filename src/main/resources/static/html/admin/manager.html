@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理中心 - Dark Video</title>
+    <link href="../../assets/zui/css/zui.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar" role="navigation">
+    <div class="container-fluid">
+        <!-- 导航头部 -->
+        <div class="navbar-header">
+            <!-- 移动设备上的导航切换按钮 -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse-example">
+                <span class="sr-only">切换导航</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- 品牌名称或logo -->
+            <a class="navbar-brand" href="/">Dark Video</a>
+        </div>
+        <!-- 导航项目 -->
+        <div class="collapse navbar-collapse navbar-collapse-example">
+            <!-- 导航中的表单 -->
+            <form class="navbar-form navbar-left" role="search" action="#" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-default">全站搜索</button>
+            </form>
+            <!-- 一般导航项目 -->
+            <ul class="nav navbar-nav navbar-right">
+                <!-- 导航中的下拉菜单 -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <img src="http://zui.sexy/docs/img/img2.jpg" width="20px" height="20px" class="img-circle" alt="圆形图片">
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="/manager">管理中心</a></li>
+                            <li><a href="#">退出登录</a></li>
+                        </ul>
+                    </a>
+                </li>
+                <li><a href="#">消息</a></li>
+                <li><a href="#">动态</a></li>
+                <li><a href="#">稍后再看</a></li>
+                <li><a href="#">收藏夹</a></li>
+                <li><a href="#">历史</a></li>
+                <li><a href="#">投稿</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 资源设置 -->
+    <div class="panel">
+        <div class="panel-heading">
+            <h2>资源设置</h2>
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <span class="input-group-addon">根目录</span>
+                <input type="text" id="inputResRootDir" class="form-control">
+            </div><br>
+            <div class="input-group">
+                <span class="input-group-addon">端口/域名</span>
+                <input type="text" id="inputResIp" class="form-control">
+            </div><br>
+            <button class="btn btn-primary" type="button" onclick="updateRes()">更新配置信息</button>
+            <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 重新生成目录/内容</button>
+            <button class="btn btn-success" type="button" onclick="cleanThumbnail()" style="float:right"><i class="icon icon-eraser"></i> 清理缩略图</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../assets/js/jquery.js"></script>
+<script src="../../assets/js/http.js"></script>
+<script src="../../assets/layer/layer.js"></script>
+<script src="../../assets/zui/js/zui.min.js"></script>
+<script>
+    $(function () {
+        // 读取资源信息
+        sendJson("get", "/manager/res", null, false, function (res) {
+                if (res.code === 0) {
+                    $("#inputResRootDir").val(res.data.resRoot);
+                    $("#inputResIp").val(res.data.resIp);
+                } else {
+                    layer.msg(res.info, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    });
+
+    // 更新资源
+    function updateRes() {
+        let resRoot = $("#inputResRootDir").val();
+        let resIp = $("#inputResIp").val();
+
+        if(resRoot == null || resRoot == '' || resIp == null || resIp == '') {
+            layer.msg("信息不能为空", {icon: 2});
+            return false;
+        }
+
+        sendJson("post", "/manager/res", null, false, function (res) {
+                if (res.code === 0) {
+                    layer.msg("更新成功");
+                } else {
+                    layer.msg(res.info, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    }
+
+    // 清理缩略图
+    function cleanThumbnail() {
+        layer.confirm("清理缩略图将耗费一定时间，确定清理？", {
+            btn: ['确定', '取消']
+        }, function () {
+            let index = layer.load();
+            sendJson("delete", "thumbnail/clean", null, false, function (res) {
+                if (res.code !== 0) {
+                    layer.msg(res.info, {icon: 2});
+                } else {
+                    layer.msg("清理完成，共清理：" + res.data + " 个", {icon: 1});
+                }
+            }, function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+            layer.close(index);
+        }, function () {
+        });
+    }
+
+    // 生成目录
+    function genDirectory() {
+        layer.confirm("重新生成耗时较长确定要重新生成目录吗？", {
+            btn: ['确定', '取消']
+        }, function () {
+            let index = layer.load();
+            sendJson("post", "/category/gen", null, false, function (res) {
+                if (res.code !== 0) {
+                    layer.msg(res.info, {icon: 2});
+                } else {
+                    layer.msg("生成成功", {icon: 1});
+                }
+            }, function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+            layer.close(index);
+        }, function () {
+        });
+    }
+</script>
+</body>
+</html>

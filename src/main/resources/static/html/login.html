@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登陆</title>
+    <link href="../assets/zui/css/zui.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <form class="form-horizontal" method="post" action="/login">
+            <div class="input-control has-icon-left">
+                <input type="text" class="form-control" id="inputUsername" name="username" placeholder="用户名" required>
+                <label for="inputUsername" class="input-control-icon-left"><i class="icon icon-user "></i></label>
+            </div>
+            <div class="input-control has-icon-left">
+                <input id="inputPassword" type="password" class="form-control" name="password" placeholder="密码" required>
+                <label for="inputPassword" class="input-control-icon-left"><i class="icon icon-leaf "></i></label>
+            </div>
+            <div class="input-control has-icon-left">
+                <input type="text" class="form-control" id="inputVerifyCode" name="verifyCode" placeholder="验证码" required>
+                <label for="inputVerifyCode" class="input-control-icon-left"><i class="icon icon-barcode "></i></label>
+            </div>
+            <div class="input-control has-icon-left">
+                <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>
+                <button class="btn btn-primary" type="submit">登陆</button>
+            </div>
+        </form>
+    </div>
+
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/zui/js/zui.min.js"></script>
+<script>
+    function refresh(obj) {
+        obj.src = "getVerifyCode?" + Math.random();
+    }
+
+    function mouseover(obj) {
+        obj.style.cursor = "pointer";
+    }
+</script>
+</body>
+</html>
