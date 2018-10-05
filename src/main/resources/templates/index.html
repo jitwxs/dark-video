@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>首页 - Dark Video</title>
+    <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <style>
+        .tab_title {
+            margin: 0px 20px 0px 10px;
+            font-size: 25px;
+        }
+        a {
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 头部 -->
+<nav th:replace="common/nav::html"></nav>
+
+<div class="container">
+    <!-- 类别导航 -->
+    <nav th:replace="common/category_nav::html"></nav>
+
+    <!-- 首页主体 -->
+    <div id="indexBody" class="row"></div>
+
+</div>
+
+<script th:src="@{/assets/js/jquery.js}"></script>
+<script th:src="@{/assets/js/http.js}"></script>
+<script th:src="@{/assets/layer/layer.js}"></script>
+<script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<script>
+
+    $(function () {
+        // 初始化首页主体内容
+        sendJson("get", "/category/list", null, false, function (res) {
+                if (res.code === 0) {
+                    initIndexBodyContent(res.data);
+                } else {
+                    layer.msg(res.info, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    });
+
+    // 初始化首页主体内容
+    function initIndexBodyContent(category) {
+        let html = '';
+
+        for(let i=0; i<category.length; i++) {
+            let id = category[i].id;
+            let navTabs = '<ul class="nav nav-tabs" role="tablist">\n' +
+                '       <li class="tab_title">'+category[i].name+'</li>\n' +
+                '       <li role="presentation" class="active"><a href="#latest_'+id+'" aria-controls="latest_tab" role="tab" data-toggle="tab">最新投稿</a></li>\n' +
+                '       <li role="presentation"><a href="#hot_'+id+'" aria-controls="hot_tab" role="tab" data-toggle="tab">最热播放</a></li>\n' +
+                '<li style="float: right;"><a href="/category/'+category[i].id+'">查看更多<i class="icon icon-angle-right"></i></a></li>\n' +
+                '   </ul>\n';
+
+            let latest = '',hot = '';
+
+            // 读取最新投稿
+            sendJson("get", "/content/"+id+"/latest", {level:1}, false, function (res) {
+                    if (res.code === 0) {
+                        let data = res.data;
+                        latest += '<div class="cards cards-borderless">\n';
+
+                        for(let j=0;j<data.length;j++) {
+                            // 1、设置点击Url
+                            let clickHref = '/content/' + data[j].id;
+
+                            // 2、设置描述
+                            let caption = '';
+                            // 视频内容的描述为视频时长
+                            if(data[j].type == "video") {
+                                caption = data[j].duration;
+                            }
+                            caption = '<div class="caption">'+caption+'</div>\n';
+
+                            // 3、拼装
+                            latest += '<div class="col-md-4 col-sm-6 col-lg-3">\n' +
+                                '        <a class="card" target="_blank" href="'+clickHref+'">\n' +
+                                '            <img src="'+data[j].thumbnail+'">\n' + caption +
+                                '            <div class="card-heading"><strong>'+data[j].name+'</strong></div>\n' +
+                                '            <div class="card-actions">\n' +
+                                '                <div class="pull-left"><i class="icon-safari"></i>125</div>\n' +
+                                '                <div class="pull-right"><i class="icon-comments-alt"></i>66</div>\n' +
+                                '            </div>\n' +
+                                '        </a>\n' +
+                                '    </div>';
+                        }
+
+                        latest += '</div>\n';
+                    } else {
+                        layer.msg(res.info, {icon: 2});
+                    }
+                },
+                function () {
+                    layer.msg("未知错误", {icon: 2});
+                });
+
+            // 读取最热播放
+            sendJson("get", "/content/"+id+"/hot", {level:1}, false, function (res) {
+                    if (res.code === 0) {
+                        let data = res.data;
+                        hot += '<div class="cards cards-borderless">\n';
+
+                        for(let j=0;j<data.length;j++) {
+                            // 1、设置点击Url
+                            let clickHref = '/content/' + data[j].id;
+
+                            // 2、设置描述
+                            let caption = '';
+                            // 视频内容的描述为视频时长
+                            if(data[j].type == "video") {
+                                caption = data[j].duration;
+                            }
+                            caption = '<div class="caption">'+caption+'</div>\n';
+
+                            // 3、拼装
+                            hot += '<div class="col-md-4 col-sm-6 col-lg-3">\n' +
+                                '        <a class="card" target="_blank" href="'+clickHref+'">\n' +
+                                '            <img src="'+data[j].thumbnail+'">\n' + caption +
+                                '            <div class="card-heading"><strong>'+data[j].name+'</strong></div>\n' +
+                                '            <div class="card-actions">\n' +
+                                '                <div class="pull-left"><i class="icon-safari"></i>125</div>\n' +
+                                '                <div class="pull-right"><i class="icon-comments-alt"></i>66</div>\n' +
+                                '            </div>\n' +
+                                '        </a>\n' +
+                                '    </div>';
+                        }
+
+                        hot += '</div>\n';
+                    } else {
+                        layer.msg(res.info, {icon: 2});
+                    }
+                },
+                function () {
+                    layer.msg("未知错误", {icon: 2});
+                });
+
+            let tabContent = '<div class="tab-content">\n' +
+                '            <div role="tabpanel" class="tab-pane fade in active" id="latest_'+id+'">\n' +
+                '                <div class="panel">\n' +
+                '                    <div class="panel-body">\n' + latest +
+                '                    </div>\n' +
+                '                </div>\n' +
+                '            </div>\n' +
+                '            <div role="tabpanel" class="tab-pane fade" id="hot_'+id+'">\n' +
+                '                <div class="panel">\n' +
+                '                    <div class="panel-body">\n' + hot +
+                '                    </div>\n' +
+                '                </div>\n' +
+                '            </div>\n' +
+                '        </div>\n';
+
+            html += (navTabs + tabContent);
+        }
+
+        $("#indexBody").html(html);
+    }
+</script>
+
+</body>
+</html>

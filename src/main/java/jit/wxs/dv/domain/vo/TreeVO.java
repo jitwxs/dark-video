@@ -13,13 +13,13 @@ import java.util.List;
 public class TreeVO {
     private String id;
 
-    private String title;
+    private String name;
 
     private List<TreeVO> children;
 
-    public TreeVO(String id, String text) {
+    public TreeVO(String id, String name) {
         this.id = id;
-        this.title = text;
+        this.name = name;
         this.children = null;
     }
 

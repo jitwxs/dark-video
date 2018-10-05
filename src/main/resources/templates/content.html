@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${content.name}+' - Dark Video'"></title>
+    <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+</head>
+<body>
+
+<!-- 头部 -->
+<nav th:replace="common/nav::html"></nav>
+
+<div class="container">
+    <!-- 类别导航 -->
+    <nav th:replace="common/category_nav::html"></nav>
+    <!-- 如果是视频内容 -->
+    <div class="row" th:if="${type == 'video'}">
+        <h3>VIDEO</h3>
+    </div>
+    <!-- 如果是目录内容 -->
+    <div class="row" th:if="${type == 'dir'}">
+        <h3>DIR</h3>
+    </div>
+</div>
+
+<script th:src="@{/assets/js/jquery.js}"></script>
+<script th:src="@{/assets/js/http.js}"></script>
+<script th:src="@{/assets/layer/layer.js}"></script>
+<script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<script>
+
+</script>
+
+</body>
+</html>

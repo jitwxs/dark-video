@@ -13,4 +13,11 @@ public interface ThumbnailService {
      * @since 2018/10/4 2:19
      */
     ResultVO cleanThumbnail();
+
+    /**
+     * 缩略图path --> url
+     * @author jitwxs
+     * @since 2018/10/5 11:25
+     */
+    String getUrl(String path);
 }

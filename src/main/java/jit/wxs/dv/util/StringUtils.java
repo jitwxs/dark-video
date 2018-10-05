@@ -68,4 +68,20 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         else
             return false;
     }
+
+    public static String getSuffix(String str) {
+        if(str.contains(".")) {
+            return str.substring(str.lastIndexOf(".") + 1);
+        } else {
+            return "";
+        }
+    }
+
+    public static String getPrefix(String str) {
+        if(str.contains(".")) {
+            return str.substring(0, str.lastIndexOf("."));
+        } else {
+            return str;
+        }
+    }
 }

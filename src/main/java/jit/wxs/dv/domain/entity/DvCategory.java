@@ -32,10 +32,6 @@ public class DvCategory implements Serializable {
      */
     private String description;
     /**
-     * 路径
-     */
-    private String path;
-    /**
      * 父分类名称
      */
     private String parentId;

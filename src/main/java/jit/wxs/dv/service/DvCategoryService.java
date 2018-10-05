@@ -3,7 +3,11 @@ package jit.wxs.dv.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import jit.wxs.dv.domain.entity.DvCategory;
+import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
+import jit.wxs.dv.domain.vo.TreeVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -20,5 +24,27 @@ public interface DvCategoryService extends IService<DvCategory> {
      * @author jitwxs
      * @since 2018/10/4 2:26
      */
-    ResultVO genCategory(String rootPath);
+    ResultVO genCategory(String resContent);
+
+    /**
+     * 获取目录
+     * @param parentId 父目录ID，为空获取顶级目录
+     * @author jitwxs
+     * @since 2018/10/4 13:52
+     */
+    List<DvCategory> listCategory(String parentId);
+
+    /**
+     * 获取展示在导航地方的目录【即1级2级目录】
+     * @author jitwxs
+     * @since 2018/10/4 13:59
+     */
+    List<TreeVO> listNavCategory();
+
+    /**
+     * 获取目录级别枚举
+     * @author jitwxs
+     * @since 2018/10/4 23:44
+     */
+    CategoryLevelEnum getLevelEnum(String id);
 }

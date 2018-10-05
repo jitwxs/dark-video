@@ -14,16 +14,25 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class SettingConfig {
     /**
-     * 资源根路径
+     * 内容资源目录
      */
-    @Value("${project.setting.key.res-root}")
-    private String resRootKey;
+    @Value("${project.setting.key.res-content}")
+    private String resContent;
     /**
-     * 资源服务器IP
+     * 缩略图资源目录
      */
-    @Value("${project.setting.key.res-ip}")
-    private String resIpKey;
-
+    @Value("${project.setting.key.res-thumbnail}")
+    private String resThumbnail;
+    /**
+     * 内容资源IP
+     */
+    @Value("${project.setting.key.res-content-ip}")
+    private String contentIp;
+    /**
+     * 缩略图资源IP
+     */
+    @Value("${project.setting.key.res-thumbnail-ip}")
+    private String thumbnailIp;
     @Value("${project.setting.key.video-num}")
     private String videoNum;
 

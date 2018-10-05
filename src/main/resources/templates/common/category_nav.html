@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
+<!-- 类别导航 -->
+<nav class="navbar navbar-default" role="navigation">
+    <ul class="nav navbar-nav nav-justified">
+        <li th:each="category: ${navCategory}" th:class="${not #lists.isEmpty(category.children) ? 'dropdown' : ''}">
+            <a th:if="${#lists.isEmpty(category.children)}" th:text="${category.name}" th:href="${'/category/'+ category.id}">
+            </a>
+            <a th:if="not ${#lists.isEmpty(category.children)}" th:text="${category.name}"
+               href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu" role="menu" th:if="not ${#lists.isEmpty(category.children)}">
+                <li>
+                    <a th:href="${'/category/'+category.id}">全部</a>
+                </li>
+                <li th:each="children:${category.children}">
+                    <a th:href="${'/category/'+children.id}" th:text="${children.name}">任务</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+
+</html>

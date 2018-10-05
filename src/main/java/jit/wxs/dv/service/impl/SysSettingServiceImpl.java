@@ -33,10 +33,13 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     @Autowired
     private SettingConfig settingConfig;
 
+
     @Override
-    public ResultVO setResInfo(String resRoot, String resIP) {
-        insertOrUpdate(settingConfig.getResRootKey(), resRoot);
-        insertOrUpdate(settingConfig.getResIpKey(), resIP);
+    public ResultVO setResInfo(String resContent, String resThumbnail, String contentIp, String thumbnailIp) {
+        insertOrUpdate(settingConfig.getResContent(), resContent);
+        insertOrUpdate(settingConfig.getResThumbnail(), resThumbnail);
+        insertOrUpdate(settingConfig.getContentIp(), contentIp);
+        insertOrUpdate(settingConfig.getThumbnailIp(), thumbnailIp);
 
         return ResultVOUtils.success();
     }
@@ -44,8 +47,10 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     @Override
     public ResultVO getResInfo() {
         Map<String, String> map = new HashMap<>(16);
-        map.put("resRoot", getResRoot());
-        map.put("resIp", getResIp());
+        map.put("resContent", getResContent());
+        map.put("resThumbnail", getResThumbnail());
+        map.put("contentIp", getContentIp());
+        map.put("thumbnailIp", getThumbnailIp());
 
         return ResultVOUtils.success(map);
     }
@@ -53,18 +58,6 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     @Override
     public ResultVO getVideoAndPictureNum() {
         return null;
-    }
-
-    @Override
-    public String getResRoot() {
-        SysSetting setting = settingMapper.selectById(settingConfig.getResRootKey());
-        return setting != null ? setting.getV() : null;
-    }
-
-    @Override
-    public String getResIp() {
-        SysSetting setting = settingMapper.selectById(settingConfig.getResIpKey());
-        return setting != null ? setting.getV() : null;
     }
 
     @Override
@@ -85,5 +78,29 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
         int pictureNum = contentMapper.selectCount(new EntityWrapper<DvContent>().eq("type", "picture"));
         insertOrUpdate(settingConfig.getVideoNum(), String.valueOf(videoNum));
         insertOrUpdate(settingConfig.getPictureNum(),  String.valueOf(pictureNum));
+    }
+
+    @Override
+    public String getResContent() {
+        SysSetting setting = settingMapper.selectById(settingConfig.getResContent());
+        return setting != null ? setting.getV() : null;
+    }
+
+    @Override
+    public String getResThumbnail() {
+        SysSetting setting = settingMapper.selectById(settingConfig.getResThumbnail());
+        return setting != null ? setting.getV() : null;
+    }
+
+    @Override
+    public String getContentIp() {
+        SysSetting setting = settingMapper.selectById(settingConfig.getContentIp());
+        return setting != null ? setting.getV() : null;
+    }
+
+    @Override
+    public String getThumbnailIp() {
+        SysSetting setting = settingMapper.selectById(settingConfig.getThumbnailIp());
+        return setting != null ? setting.getV() : null;
     }
 }

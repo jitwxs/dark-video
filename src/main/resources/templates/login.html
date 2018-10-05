@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>登陆</title>
-    <link href="../assets/zui/css/zui.min.css" rel="stylesheet">
+    <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
 </head>
 <body>
 
@@ -30,8 +30,8 @@
         </form>
     </div>
 
-<script src="../assets/js/jquery.js"></script>
-<script src="../assets/zui/js/zui.min.js"></script>
+<script th:src="@{/assets/js/jquery.js}"></script>
+<script th:src="@{/assets/zui/js/zui.min.js}"></script>
 <script>
     function refresh(obj) {
         obj.src = "getVerifyCode?" + Math.random();

@@ -31,12 +31,11 @@ public class ThumbnailServiceImpl implements ThumbnailService {
      */
     @Override
     public ResultVO cleanThumbnail() {
-        String resRoot = settingService.getResRoot();
-        String thumbnailPath = resRoot + File.separator + "Thumbnail";
+        String resThumbnail = settingService.getResThumbnail();
 
         // 递归查找缩略图根目录下所有jpg文件
         String[] selectSuffix = {"jpg"};
-        Collection<File> listFiles = FileUtils.listFiles(new File(thumbnailPath), selectSuffix, true);
+        Collection<File> listFiles = FileUtils.listFiles(new File(resThumbnail), selectSuffix, true);
 
         int count = 0;
         for (File file : listFiles) {
@@ -47,5 +46,10 @@ public class ThumbnailServiceImpl implements ThumbnailService {
             }
         }
         return ResultVOUtils.success(count);
+    }
+
+    @Override
+    public String getUrl(String path) {
+        return settingService.getThumbnailIp() + "/" + path;
     }
 }

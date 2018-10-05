@@ -18,6 +18,8 @@ public enum ResultEnum {
     AUTHORITY_ERROR("鉴权错误", 12),
     PERMISSION_ERROR("权限错误", 13),
     RES_ROOT_ERROR("根路径错误", 13),
+    CATEGORY_NOT_EXIST("分类不存在", 14),
+    CONTENT_NOT_EXIST("内容不存在", 15),
     PARAM_ERROR("参数错误", 100);
 
     private String message;

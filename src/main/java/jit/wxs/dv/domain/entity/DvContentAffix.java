@@ -2,22 +2,20 @@ package jit.wxs.dv.domain.entity;
 
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.enums.IdType;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * <p>
- * 内容表
+ * 内容附件【三级目录内所有内容】表
  * </p>
  *
  * @author jitwxs
  * @since 2018-10-04
  */
 @Data
-public class DvContent implements Serializable {
+public class DvContentAffix implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,13 +26,9 @@ public class DvContent implements Serializable {
      */
     private String name;
     /**
-     * 一级分类
+     * 内容ID
      */
-    private String firstCategory;
-    /**
-     * 二级分类
-     */
-    private String secondCategory;
+    private String contentId;
     /**
      * 路径
      */
@@ -63,13 +57,4 @@ public class DvContent implements Serializable {
      * 帧率
      */
     private String frameRate;
-    /**
-     * 上传用户
-     */
-    private String author;
-    /**
-     * 上传时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date createDate;
 }
