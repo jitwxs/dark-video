@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
+<div class="row">
+    <hr>
+    <p style="font-size: 18px;line-height: 24px;margin-bottom: 30px;">看过视频的还喜欢</p>
+    <div class="mhn-slide owl-carousel">
+        <div class="mhn-item" th:each="recommend,iterStat:${recommends}">
+            <div class="mhn-inner">
+                <a target="_blank" th:href="'/content/'+${recommend.id}">
+                <img th:src="${recommend.thumbnail}">
+                    <div class="mhn-img" th:style="'background-image: url('+${recommend.thumbnail}+');'">
+                        <div class="loader-circle">
+                            <div class="loader-stroke-left"></div>
+                            <div class="loader-stroke-right"></div>
+                        </div>
+                    </div>
+                </a>
+                <div class="mhn-text">
+                    <h4 th:text="${recommend.name}"></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

@@ -15,4 +15,7 @@
           `second_category` = #{category}
         </if>
     </select>
+    <select id="hasExist" resultType="java.lang.Boolean">
+        SELECT count(*) FROM `dv_content` where `id`=#{id}
+    </select>
 </mapper>

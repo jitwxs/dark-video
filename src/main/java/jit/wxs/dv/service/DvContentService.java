@@ -3,11 +3,12 @@ package jit.wxs.dv.service;
 
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.IService;
-import jit.wxs.dv.domain.dto.ContentDTO;
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.vo.ContentVO;
 import jit.wxs.dv.domain.vo.ResultVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -53,5 +54,11 @@ public interface DvContentService extends IService<DvContent> {
      */
     Page<ContentVO> pageByCategory(CategoryLevelEnum levelEnum, String category, Page<DvContent> page);
 
-    ContentDTO getContentDTO(String contentId);
+    /**
+     * 获取推荐内容
+     * 当前内容同子分类下的其他内容
+     * @author jitwxs
+     * @since 2018/10/6 20:55
+     */
+    List<ContentVO> listRecommend(DvContent content, int count);
 }

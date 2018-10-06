@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import jit.wxs.dv.config.SettingConfig;
 import jit.wxs.dv.convert.ContentVOConvert;
-import jit.wxs.dv.domain.dto.ContentDTO;
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.vo.ContentVO;
@@ -14,7 +13,6 @@ import jit.wxs.dv.mapper.DvContentMapper;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.service.SysSettingService;
-import jit.wxs.dv.service.ThumbnailService;
 import jit.wxs.dv.util.FileUtils;
 import jit.wxs.dv.util.ResultVOUtils;
 import jit.wxs.dv.util.StringUtils;
@@ -23,15 +21,16 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -50,8 +49,6 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     private DvContentAffixService contentAffixService;
     @Autowired
     private SysSettingService settingService;
-    @Autowired
-    private ThumbnailService thumbnailService;
     @Autowired
     private SettingConfig settingConfig;
     @Autowired
@@ -120,28 +117,35 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     }
 
     @Override
-    public ContentDTO getContentDTO(String contentId) {
-        DvContent content = contentMapper.selectById(contentId);
-        ContentDTO contentDTO = new ContentDTO();
-        BeanUtils.copyProperties(content, contentDTO);
+    public List<ContentVO> listRecommend(DvContent content, int count) {
+        String contentId = content.getId();
+        String firstCategory = content.getFirstCategory();
+        String secondCategory = content.getSecondCategory();
 
-        // 设置Url
-        if("video".equals(contentDTO.getType())) {
-            contentDTO.setUrl(settingService.getContentIp() + "/" + contentDTO.getPath());
+        // 优先从二级分类中获取
+        List<DvContent> contents = contentMapper.selectList(new EntityWrapper<DvContent>().
+                eq("second_category", secondCategory)
+                .notIn("id", contentId)
+                .last("limit " + count));
+
+        // 如果数量不足，从一级分类中补充
+        if(contents.size() < count) {
+            // 需要排除的ID集合
+            List<String> exceptIds = contents.stream().map(DvContent::getId).collect(Collectors.toList());
+            exceptIds.add(contentId);
+
+            count = count - contents.size();
+            List<DvContent> contents1 = contentMapper.selectList(new EntityWrapper<DvContent>()
+                    .eq("first_category", firstCategory)
+                    .notIn("id", exceptIds)
+                    .last("limit " + count));
+
+            for(DvContent content1 : contents1) {
+                contents.add(content1);
+            }
         }
 
-        // 获取缩略图Url
-        String thumbnailPath = contentDTO.getThumbnail();
-        if(StringUtils.isNotBlank(thumbnailPath)) {
-            contentDTO.setThumbnail(thumbnailService.getUrl(thumbnailPath));
-        }
-
-        // 设置后缀
-        contentDTO.setSuffix(StringUtils.getSuffix(contentDTO.getName()));
-        // 设置去除后缀后的文件名
-        contentDTO.setName(StringUtils.getPrefix(contentDTO.getName()));
-
-        return contentDTO;
+        return contentVOConvert.convert(contents);
     }
 
     /**

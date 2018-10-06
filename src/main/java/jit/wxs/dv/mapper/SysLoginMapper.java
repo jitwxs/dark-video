@@ -12,5 +12,4 @@ import jit.wxs.dv.domain.entity.SysLogin;
  * @since 2018-10-04
  */
 public interface SysLoginMapper extends BaseMapper<SysLogin> {
-
 }

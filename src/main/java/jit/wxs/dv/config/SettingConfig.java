@@ -39,6 +39,12 @@ public class SettingConfig {
     @Value("${project.setting.key.picture-num}")
     private String pictureNum;
 
+    /**
+     * 首页轮播图
+     */
+    @Value("${project.setting.key.carousel}")
+    private String carousel;
+
     @Value("${server.url}")
     private String serverUrl;
 

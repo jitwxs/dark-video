@@ -20,6 +20,10 @@ public enum ResultEnum {
     RES_ROOT_ERROR("根路径错误", 13),
     CATEGORY_NOT_EXIST("分类不存在", 14),
     CONTENT_NOT_EXIST("内容不存在", 15),
+    COMMENT_DEL_ERROR("评论删除失败", 16),
+    COMMENT_PUBLISH_ERROR("评论发表失败", 17),
+    COMMENT_TOO_LONG("评论内容长度不得超过255个字符", 18),
+    INDEX_CAROUSEL_NULL("首页轮播图数据为空", 19),
     PARAM_ERROR("参数错误", 100);
 
     private String message;

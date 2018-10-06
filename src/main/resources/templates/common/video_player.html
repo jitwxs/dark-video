@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
+<!-- 视频Tab头 -->
+<ul class="nav nav-tabs" th:if="${#lists.size(videoBO) gt 1}">
+    <li class="tab_title" th:text="${content.name}"></li>
+    <li th:each="video,iterStat : ${videoBO}" th:class="${iterStat.index == 0} ? 'active' : ''">
+        <a data-tab href="#"
+           th:class="${iterStat.index == 0} ? 'active' : ''" th:attr="data_id=${video.id}" th:text="${video.name}"></a>
+    </li>
+</ul>
+<!-- 视频主体 -->
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="videoTab">
+        <!-- 视频头 -->
+        <div class="video-title">
+            <h3 id="contentModalTitle" th:text="${videoBO[0].name}"></h3>
+            <div>
+                <span id="contentModalAuthor" class="modal-small-title" th:text="${'本视频由 '+videoBO[0].author}"></span>
+                <span id="contentModalDate" class="modal-small-title" th:text="'上传于 '+${#dates.format(videoBO[0].createDate, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                <span id="contentModalSize" class="modal-small-title ml32" th:text="${videoBO[0].size}"></span>
+                <span id="contentModalResolution" class="modal-small-title ml32" th:text="${videoBO[0].resolution}"></span>
+                <span id="contentModalFrameRate" class="modal-small-title ml32" th:text="${videoBO[0].frameRate}"></span>
+                <a class="modal-small-title ml32" href="javascript:;" style="color:#99a2aa;">稿件投诉</a>
+            </div>
+        </div>
+        <!-- 播放器 -->
+        <div class="mt32">
+            <video id="videoPlayer" class="centeredVideo" controls width="100%" height="664px;" th:src="${videoBO[0].url}">
+                Your browser is too old which doesn't support HTML5 video.
+            </video>
+        </div>
+    </div>
+</div>
+
+</html>

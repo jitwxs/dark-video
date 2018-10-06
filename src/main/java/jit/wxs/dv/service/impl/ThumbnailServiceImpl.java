@@ -50,6 +50,9 @@ public class ThumbnailServiceImpl implements ThumbnailService {
 
     @Override
     public String getUrl(String path) {
+        // 替换反斜杠
+        path = path.replace("\\", "/");
+
         return settingService.getThumbnailIp() + "/" + path;
     }
 }

@@ -6,37 +6,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>管理中心 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/common.css}" rel="stylesheet">
 </head>
 <body>
 
 <nav th:replace="common/nav::html"></nav>
 
 <div class="container">
-    <!-- 资源设置 -->
-    <div class="panel">
-        <div class="panel-heading">
-            <h2>资源设置</h2>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#res_tab" aria-controls="res_setting" role="tab" data-toggle="tab">资源设置</a></li>
+        <li role="presentation"><a href="#carousel_tab" aria-controls="index_carousel" role="tab" data-toggle="tab">轮播图设置</a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="res_tab">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">内容目录【末尾不要加斜杠】</span>
+                        <input type="text" id="inputResContent" class="form-control">
+                    </div><br>
+                    <div class="input-group">
+                        <span class="input-group-addon">缩略图目录【末尾不要加斜杠】</span>
+                        <input type="text" id="inputResThumbnail" class="form-control">
+                    </div><br>
+                    <div class="input-group">
+                        <span class="input-group-addon">内容服务器【末尾不要加斜杠】</span>
+                        <input type="text" id="inputContentIp" class="form-control">
+                    </div><br>
+                    <div class="input-group">
+                        <span class="input-group-addon">缩略图服务器【末尾不要加斜杠】</span>
+                        <input type="text" id="inputThumbnailIp" class="form-control">
+                    </div><br>
+                    <button class="btn btn-primary" type="button" onclick="updateRes()">更新配置信息</button>
+                    <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 重新生成目录/内容</button>
+                    <button class="btn btn-success" type="button" onclick="cleanThumbnail()" style="float:right"><i class="icon icon-eraser"></i> 清理缩略图</button>
+                </div>
+            </div>
         </div>
-        <div class="panel-body">
-            <div class="input-group">
-                <span class="input-group-addon">内容目录【末尾不要加斜杠】</span>
-                <input type="text" id="inputResContent" class="form-control">
-            </div><br>
-            <div class="input-group">
-                <span class="input-group-addon">缩略图目录【末尾不要加斜杠】</span>
-                <input type="text" id="inputResThumbnail" class="form-control">
-            </div><br>
-            <div class="input-group">
-                <span class="input-group-addon">内容服务器【末尾不要加斜杠】</span>
-                <input type="text" id="inputContentIp" class="form-control">
-            </div><br>
-            <div class="input-group">
-                <span class="input-group-addon">缩略图服务器【末尾不要加斜杠】</span>
-                <input type="text" id="inputThumbnailIp" class="form-control">
-            </div><br>
-            <button class="btn btn-primary" type="button" onclick="updateRes()">更新配置信息</button>
-            <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 重新生成目录/内容</button>
-            <button class="btn btn-success" type="button" onclick="cleanThumbnail()" style="float:right"><i class="icon icon-eraser"></i> 清理缩略图</button>
+        <div role="tabpanel" class="tab-pane fade" id="carousel_tab">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="row" id="carousel_group"></div>
+                    <div class="row">
+                        <button class="btn btn-info" type="button" onclick="addCarousel()">添加项</button>
+                        <button class="btn btn-warning" type="button" onclick="deleteCarousel()">删除项</button>
+                        <button class="btn btn-primary" type="button" onclick="saveCarousel()">保存设置</button>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    轮播图大小：970 x 410
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -48,14 +70,37 @@
 <script>
     $(function () {
         // 读取资源信息
-        sendJson("get", "/manager/res", null, false, function (res) {
+        sendJson("get", "/setting/res", null, false, function (res) {
                 if (res.code === 0) {
                     $("#inputResContent").val(res.data.resContent);
                     $("#inputResThumbnail").val(res.data.resThumbnail);
                     $("#inputContentIp").val(res.data.contentIp);
                     $("#inputThumbnailIp").val(res.data.thumbnailIp);
                 } else {
-                    layer.msg(res.info, {icon: 2});
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+
+        // 读取缩略图信息
+        sendJson("get", "/setting/carousel", null, false, function (res) {
+                if (res.code === 0) {
+                    let json = JSON.parse(res.data), html = '';
+                    for(let i = 0; i<json.length;i++) {
+                        html += '<div class="row mb32">\n' +
+                            '<div class="input-control col-md-6">\n' +
+                            '  <input type="text" class="form-control" name="carouselLink" value="'+json[i].link+'" placeholder="图片链接">\n' +
+                            '</div>\n' +
+                            '<div class="input-control col-md-6">\n' +
+                            '  <input type="text" class="form-control" name="carouselUrl" value="'+json[i].url+'" placeholder="跳转Url">\n' +
+                            '</div>\n' +
+                            '</div>';
+                    }
+                    $("#carousel_group").html(html);
+                } else {
+                    layer.msg(res.message, {icon: 2});
                 }
             },
             function () {
@@ -85,11 +130,11 @@
             thumbnailIp:thumbnailIp
         };
 
-        sendJson("post", "/manager/res", data, false, function (res) {
+        sendJson("post", "/setting/res", data, false, function (res) {
                 if (res.code === 0) {
                     layer.msg("更新成功", {icon: 1});
                 } else {
-                    layer.msg(res.info, {icon: 2});
+                    layer.msg(res.message, {icon: 2});
                 }
             },
             function () {
@@ -105,7 +150,7 @@
             let index = layer.load();
             sendJson("delete", "thumbnail/clean", null, false, function (res) {
                 if (res.code !== 0) {
-                    layer.msg(res.info, {icon: 2});
+                    layer.msg(res.message, {icon: 2});
                 } else {
                     layer.msg("清理完成，共清理：" + res.data + " 个", {icon: 1});
                 }
@@ -125,7 +170,7 @@
             let index = layer.load();
             sendJson("post", "/category/gen", null, false, function (res) {
                 if (res.code !== 0) {
-                    layer.msg(res.info, {icon: 2});
+                    layer.msg(res.message, {icon: 2});
                 } else {
                     layer.msg("生成成功", {icon: 1});
                 }
@@ -135,6 +180,49 @@
             layer.close(index);
         }, function () {
         });
+    }
+
+    function addCarousel() {
+        let html = '<div class="row mb32">\n' +
+            '<div class="input-control col-md-6">\n' +
+            '  <input type="text" class="form-control" name="carouselLink" placeholder="图片链接">\n' +
+            '</div>\n' +
+            '<div class="input-control col-md-6">\n' +
+            '  <input type="text" class="form-control" name="carouselUrl" placeholder="跳转Url">\n' +
+            '</div>\n' +
+            '</div>';
+        $("#carousel_group").append(html);
+    }
+
+    function deleteCarousel() {
+        $("#carousel_group").children().last().remove();
+    }
+    
+    function saveCarousel() {
+        let links = $("input[name='carouselLink']");
+        let urls = $("input[name='carouselUrl']");
+        let array = new Array();
+
+        for(let i =0; i<links.length; i++) {
+            let link = $(links[i]).val();
+            let url = $(urls[i]).val();
+
+            if(link != null && link !== '') {
+                array.push({link:link,url:url});
+            }
+        }
+
+        if(array.length > 0) {
+            sendJson("post", "/setting/carousel", {json:JSON.stringify(array)}, false, function (res) {
+                if (res.code !== 0) {
+                    layer.msg(res.message, {icon: 2});
+                } else {
+                    layer.msg("保存成功", {icon: 1});
+                }
+            }, function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+        }
     }
 </script>
 </body>

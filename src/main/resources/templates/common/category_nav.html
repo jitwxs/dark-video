@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
 
-<!-- 类别导航 -->
 <nav class="navbar navbar-default" role="navigation">
     <ul class="nav navbar-nav nav-justified">
         <li th:each="category: ${navCategory}" th:class="${not #lists.isEmpty(category.children) ? 'dropdown' : ''}">

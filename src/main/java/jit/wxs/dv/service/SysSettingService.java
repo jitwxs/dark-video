@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.service.IService;
 import jit.wxs.dv.domain.entity.SysSetting;
 import jit.wxs.dv.domain.vo.ResultVO;
 
+import java.util.Map;
+
 /**
  * <p>
  *  服务类
@@ -37,7 +39,7 @@ public interface SysSettingService extends IService<SysSetting> {
      * @author jitwxs
      * @since 2018/10/4 1:42
      */
-    ResultVO getVideoAndPictureNum();
+    Map<String, String> getVideoAndPictureNum();
 
     void updateVideoAndPictureNum();
 
@@ -50,4 +52,14 @@ public interface SysSettingService extends IService<SysSetting> {
     String getThumbnailIp();
 
     void insertOrUpdate(String key, String value);
+
+    ResultVO getCarouselInfo();
+
+    /**
+     * 设置缩略图信息
+     * @param json json信息
+     * @author jitwxs
+     * @since 2018/10/6 22:55
+     */
+    ResultVO setCarouselInfo(String json);
 }

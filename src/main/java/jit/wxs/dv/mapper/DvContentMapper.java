@@ -18,6 +18,8 @@ import java.util.List;
  */
 public interface DvContentMapper extends BaseMapper<DvContent> {
 
+    boolean hasExist(String id);
+
     /**
      * 读取一级目录下内容
      * @author jitwxs

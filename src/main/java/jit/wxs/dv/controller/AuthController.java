@@ -4,6 +4,7 @@ import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.domain.vo.TreeVO;
 import jit.wxs.dv.service.DvCategoryService;
+import jit.wxs.dv.service.SysSettingService;
 import jit.wxs.dv.util.ResultVOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
@@ -23,6 +24,8 @@ import java.util.List;
 public class AuthController {
     @Autowired
     private DvCategoryService categoryService;
+    @Autowired
+    private SysSettingService settingService;
 
     /**
      * 首页面
@@ -31,8 +34,8 @@ public class AuthController {
      */
     @RequestMapping("/")
     public String showIndex(ModelMap map) {
+        // 导航数据
         List<TreeVO> navCategory = categoryService.listNavCategory();
-
         map.addAttribute("navCategory", navCategory);
 
         return "index";

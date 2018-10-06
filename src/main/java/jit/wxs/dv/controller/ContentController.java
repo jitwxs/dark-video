@@ -1,11 +1,21 @@
 package jit.wxs.dv.controller;
 
-import jit.wxs.dv.domain.dto.ContentDTO;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import jit.wxs.dv.convert.ContentBOConvert;
+import jit.wxs.dv.convert.ContentVOConvert;
+import jit.wxs.dv.domain.bo.ContentBO;
+import jit.wxs.dv.domain.bo.VideoBO;
+import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.entity.DvContentAffix;
+import jit.wxs.dv.domain.entity.DvContentComment;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.enums.ResultEnum;
+import jit.wxs.dv.domain.vo.ContentVO;
 import jit.wxs.dv.domain.vo.ResultVO;
+import jit.wxs.dv.domain.vo.TreeVO;
+import jit.wxs.dv.service.DvCategoryService;
 import jit.wxs.dv.service.DvContentAffixService;
+import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.util.ResultVOUtils;
 import jit.wxs.dv.util.StringUtils;
@@ -16,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -27,9 +38,17 @@ import java.util.List;
 @RequestMapping("/content")
 public class ContentController {
     @Autowired
+    private DvCategoryService categoryService;
+    @Autowired
     private DvContentService contentService;
     @Autowired
     private DvContentAffixService contentAffixService;
+    @Autowired
+    private DvContentCommentService contentCommentService;
+    @Autowired
+    private ContentBOConvert contentBOConvert;
+    @Autowired
+    private ContentVOConvert contentVOConvert;
 
     /**
      * 内容页面
@@ -40,8 +59,8 @@ public class ContentController {
     public String showContent(@PathVariable String contentId, ModelMap map,
                               HttpServletRequest request, HttpServletResponse response) {
         // 判断合法
-        ContentDTO contentDTO = null;
-        if(StringUtils.isBlank(contentId) || (contentDTO = contentService.getContentDTO(contentId)) == null) {
+        DvContent content = null;
+        if(StringUtils.isBlank(contentId) || (content = contentService.selectById(contentId)) == null) {
             try {
                 request.setAttribute("ERR_MSG", ResultEnum.CONTENT_NOT_EXIST);
                 request.getRequestDispatcher("/auth/error").forward(request,response);
@@ -50,14 +69,58 @@ public class ContentController {
             }
         }
 
-        // 1、读取内容数据
-        map.put("content", contentDTO);
-        map.put("type", contentDTO.getType());
-        // 2、如果内容为dir，读取附件数据
-        if("dir".equals(contentDTO.getType())) {
-            List<DvContentAffix> contentAffixes = contentAffixService.listByContentId(contentId);
-            map.put("affixes", contentAffixes);
+        map.put("content", contentVOConvert.convert(content));
+        map.put("type", content.getType());
+
+        List<VideoBO> videoBOS = new LinkedList<>();
+        List<ContentBO> contentBOS = new LinkedList<>();
+        // 判断类型
+        switch (content.getType()) {
+            case "video":
+                VideoBO videoBO = contentBOConvert.convert2Video(content);
+                videoBOS.add(videoBO);
+                map.put("videoBO", videoBOS);
+                break;
+            case "picture":
+            case "music":
+            case "page":
+                ContentBO contentBO = contentBOConvert.convert2BO(content);
+                contentBOS.add(contentBO);
+                map.put("contentBO",contentBOS);
+                break;
+            case "dir":
+                List<DvContentAffix> videoAffixes =
+                        contentAffixService.selectList(new EntityWrapper<DvContentAffix>()
+                                .eq("content_id", contentId)
+                                .eq("type", "video")
+                                .orderBy("name", true));
+                List<DvContentAffix> otherAffixes =
+                        contentAffixService.selectList(new EntityWrapper<DvContentAffix>()
+                                .eq("content_id", contentId)
+                                .ne("type", "video")
+                                .orderBy("name", true));
+
+                videoBOS = contentBOConvert.convertAffix2Video(videoAffixes, content.getCreateDate());
+                contentBOS = contentBOConvert.convertAffix2BO(otherAffixes, content.getCreateDate());
+                map.put("videoBO", videoBOS);
+                map.put("contentBO",contentBOS);
+                break;
+            default:
+                break;
         }
+
+        // 读取评论
+        List<DvContentComment> comments = contentCommentService.listByContentId(contentId);
+        map.put("comments",comments);
+        map.put("commentCount",comments.size());
+
+        // 读取推荐视频
+        List<ContentVO> recommends = contentService.listRecommend(content, 10);
+        map.put("recommends", recommends);
+
+        // 获取类别导航头
+        List<TreeVO> navCategory = categoryService.listNavCategory();
+        map.addAttribute("navCategory", navCategory);
 
         return "content";
     }
@@ -102,5 +165,22 @@ public class ContentController {
         }
 
         return contentService.listHotContent(levelEnum, category, count);
+    }
+
+    /**
+     * 读取附件信息
+     * @author jitwxs
+     * @since 2018/10/5 21:26
+     */
+    @GetMapping("/suffix/{suffix}")
+    @ResponseBody
+    public ResultVO getContentSuffix(@PathVariable String suffix) {
+        DvContentAffix contentAffix = contentAffixService.selectById(suffix);
+
+        if("video".equals(contentAffix.getType())) {
+            return ResultVOUtils.success(contentBOConvert.convertAffix2Video(contentAffix, null));
+        } else {
+            return ResultVOUtils.success(contentBOConvert.convertAffix2BO(contentAffix, null));
+        }
     }
 }

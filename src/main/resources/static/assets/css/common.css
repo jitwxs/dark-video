@@ -1,0 +1,24 @@
+.tab_title {
+    margin: 0px 20px 0px 10px;
+    font-size: 25px;
+}
+
+.modal-small-title {
+    color: #99a2aa;font-size: 12px;
+}
+
+.ml32 {
+    margin-left: 32px;
+}
+
+.mr32 {
+    margin-right: 32px;
+}
+
+.mt32 {
+    margin-top: 32px;
+}
+
+.mb32 {
+    margin-bottom: 32px;
+}

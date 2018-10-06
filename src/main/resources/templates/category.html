@@ -33,11 +33,11 @@
             <div class="col-md-4 col-sm-6 col-lg-3" th:each="content: ${contents.records}">
                 <a class="card" target="_blank" th:href="'/content/'+${content.id}">
                     <img th:src="${content.thumbnail}">
-                    <div class="caption" th:if="content.type=='video'">${content.duration}</div>
+                    <div class="caption" th:if="${content.type=='video'}" th:text="${content.duration}"></div>
                     <div class="card-heading"><strong th:text="${content.name}"></strong></div>
                     <div class="card-actions">
                         <div class="pull-left"><i class="icon-safari"></i>125</div>
-                        <div class="pull-right"><i class="icon-comments-alt"></i> 66</div>
+                        <div class="pull-right"><i class="icon-comments-alt" th:text="${content.commentCount}"></i></div>
                     </div>
                 </a>
             </div>
@@ -45,7 +45,7 @@
 
         <!-- 分页器 -->
         <ul id="myPager" class="pager" data-ride="pager" data-elements=["first","prev","nav","last","next","goto"]
-            th:attr="data-page=${contents.current}, data-rec-total=${contents.total}"></ul>
+            th:attr="data-page=${contents.current}, data-rec-total=${contents.total}, data-rec-per-page=${contents.size}"></ul>
     </div>
 
 </div>

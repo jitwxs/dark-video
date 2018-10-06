@@ -2,6 +2,7 @@ package jit.wxs.dv.convert;
 
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.vo.ContentVO;
+import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.service.ThumbnailService;
 import jit.wxs.dv.util.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -20,6 +21,8 @@ public class ContentVOConvert {
 
     @Autowired
     private ThumbnailService thumbnailService;
+    @Autowired
+    private DvContentCommentService contentCommentService;
 
     public ContentVO convert(DvContent content) {
         ContentVO contentVO = new ContentVO();
@@ -33,6 +36,9 @@ public class ContentVOConvert {
         if(StringUtils.isNotBlank(thumbnailPath)) {
             contentVO.setThumbnail(thumbnailService.getUrl(thumbnailPath));
         }
+
+        // 获取评论数
+        contentVO.setCommentCount(contentCommentService.countByContentId(content.getId()));
 
         return contentVO;
     }

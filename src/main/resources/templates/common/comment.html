@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
+<div class="comments">
+    <header>
+        <div class="pull-right"><a href="#commentReplyForm2" class="btn btn-primary"><i class="icon-comment-alt"></i> 发表评论</a></div>
+        <h3 th:text="${commentCount}+' 评论'">128 评论</h3>
+    </header>
+    <section class="comments-list">
+        <div class="comment" th:each="comment: ${comments}">
+            <a href="#" class="avatar">
+                <i class="icon-user icon-2x"></i>
+            </a>
+            <div class="content">
+                <div class="pull-right text-muted" th:text="${#dates.format(comment.createDate, 'yyyy-MM-dd HH:mm:ss')}">2 个小时前</div>
+                <div><a href="#"><strong th:text="${comment.username}">Catouse</strong></a></div>
+                <div class="text" th:text="${comment.content}">你到底把我家钥匙放哪里了...</div>
+                <div class="actions">
+                    <a href="#" th:attr="data_id=${comment.id}" onclick="deleteComment(this)">删除</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <div class="reply-form" id="commentReplyForm2">
+            <a href="#" class="avatar"><i class="icon-user icon-2x"></i></a>
+            <form class="form">
+                <input type="hidden" id="contentId" th:value="${content.id}">
+                <div class="form-group">
+                    <textarea id="commentContent" class="form-control new-comment-text" rows="2" placeholder="撰写评论..."></textarea>
+                </div>
+                <div class="form-group comment-user">
+                    <div class="row">
+                        <div class="col-md-offset-10 col-md-2">
+                            <button type="button" class="btn btn-block btn-primary" onclick="comment()"><i class="icon-ok"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // 发表评论
+    function comment() {
+        let commentContent = $("#commentContent").val();
+
+        if(commentContent == '') {
+            layer.msg("评论内容不能为空", {icon: 2});
+            return false;
+        }
+
+        let contentId = $("#contentId").val();
+        let data = {
+            contentId: contentId,
+            content: commentContent
+        };
+        sendJson("post", "/comment", data, false, function (res) {
+                if (res.code === 0) {
+                    layer.msg("评论成功", {icon: 1});
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    }
+
+    // 删除评论
+    function deleteComment(obj) {
+        let id = $(obj).attr("data_id");
+        sendJson("delete", "/comment/"+id, null, false, function (res) {
+                if (res.code === 0) {
+                    layer.msg("删除成功", {icon: 1});
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    }
+
+</script>
+
+</html>

@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import jit.wxs.dv.config.SettingConfig;
 import jit.wxs.dv.domain.entity.DvContent;
+import jit.wxs.dv.domain.entity.DvContentAffix;
 import jit.wxs.dv.domain.entity.SysSetting;
+import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
+import jit.wxs.dv.mapper.DvContentAffixMapper;
 import jit.wxs.dv.mapper.DvContentMapper;
 import jit.wxs.dv.mapper.SysSettingMapper;
 import jit.wxs.dv.service.SysSettingService;
@@ -30,6 +33,8 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     private SysSettingMapper settingMapper;
     @Autowired
     private DvContentMapper contentMapper;
+    @Autowired
+    private DvContentAffixMapper contentAffixMapper;
     @Autowired
     private SettingConfig settingConfig;
 
@@ -56,8 +61,14 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     }
 
     @Override
-    public ResultVO getVideoAndPictureNum() {
-        return null;
+    public Map<String, String> getVideoAndPictureNum() {
+        Map<String, String> map = new HashMap<>(16);
+        SysSetting setting1 = settingMapper.selectById(settingConfig.getVideoNum());
+        SysSetting setting2 = settingMapper.selectById(settingConfig.getPictureNum());
+
+        map.put("vN", setting1 != null ? setting1.getV() : "0");
+        map.put("pN", setting2 != null ? setting2.getV() : "0");
+        return map;
     }
 
     @Override
@@ -73,11 +84,30 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     }
 
     @Override
+    public ResultVO getCarouselInfo() {
+        SysSetting setting = settingMapper.selectById(settingConfig.getCarousel());
+        if(setting != null) {
+            return ResultVOUtils.success(setting.getV());
+        } else {
+            return ResultVOUtils.success(ResultVOUtils.error(ResultEnum.INDEX_CAROUSEL_NULL));
+        }
+    }
+
+    @Override
+    public ResultVO setCarouselInfo(String json) {
+        insertOrUpdate(settingConfig.getCarousel(), json);
+        return ResultVOUtils.success();
+    }
+
+    @Override
     public void updateVideoAndPictureNum() {
-        int videoNum = contentMapper.selectCount(new EntityWrapper<DvContent>().eq("type", "video"));
-        int pictureNum = contentMapper.selectCount(new EntityWrapper<DvContent>().eq("type", "picture"));
-        insertOrUpdate(settingConfig.getVideoNum(), String.valueOf(videoNum));
-        insertOrUpdate(settingConfig.getPictureNum(),  String.valueOf(pictureNum));
+        int contentVideoNum = contentMapper.selectCount(new EntityWrapper<DvContent>().eq("type", "video"));
+        int contentPictureNum = contentMapper.selectCount(new EntityWrapper<DvContent>().eq("type", "picture"));
+        int affixVideoNum = contentAffixMapper.selectCount(new EntityWrapper<DvContentAffix>().eq("type", "video"));
+        int affixPictureNum = contentAffixMapper.selectCount(new EntityWrapper<DvContentAffix>().eq("type", "picture"));
+
+        insertOrUpdate(settingConfig.getVideoNum(), String.valueOf(contentVideoNum+affixVideoNum));
+        insertOrUpdate(settingConfig.getPictureNum(),  String.valueOf(contentPictureNum+affixPictureNum));
     }
 
     @Override

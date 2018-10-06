@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>首页 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/common.css}" rel="stylesheet">
+
+    <!-- 轮播区域CSS -->
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/lunbo/normalize.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/css/lunbo/posterTvGrid.css}">
     <style>
-        .tab_title {
-            margin: 0px 20px 0px 10px;
-            font-size: 25px;
-        }
         a {
             cursor:pointer;
         }
@@ -21,28 +22,65 @@
 <!-- 头部 -->
 <nav th:replace="common/nav::html"></nav>
 
+<div class="alert alert-success alert-dismissable">
+    <div class="content" id="dataAlert" style="text-align: center;">
+    </div>
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+</div>
+
 <div class="container">
     <!-- 类别导航 -->
     <nav th:replace="common/category_nav::html"></nav>
-
+    <!-- 轮播 -->
+    <div class="htmleaf-content visible-lg">
+        <div id="posterTvGrid"></div>
+    </div>
     <!-- 首页主体 -->
     <div id="indexBody" class="row"></div>
-
 </div>
 
 <script th:src="@{/assets/js/jquery.js}"></script>
 <script th:src="@{/assets/js/http.js}"></script>
 <script th:src="@{/assets/layer/layer.js}"></script>
 <script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<!-- 轮播区域JS -->
+<script th:src="@{/assets/js/posterTvGrid.js}"></script>
 <script>
-
     $(function () {
         // 初始化首页主体内容
         sendJson("get", "/category/list", null, false, function (res) {
                 if (res.code === 0) {
                     initIndexBodyContent(res.data);
                 } else {
-                    layer.msg(res.info, {icon: 2});
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+
+        // 读取轮播图信息
+        sendJson("get", "/setting/carousel", null, false, function (res) {
+                if (res.code === 0) {
+                    let json = JSON.parse(res.data), array = new Array();
+                    for(let i=0;i<json.length;i++) {
+                        array.push({"img":json[i].link,"url":json[i].url});
+                    }
+                    new posterTvGrid('posterTvGrid',{className: "posterTvGrid"}, array);
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+
+        // 读取视频和图片数
+        sendJson("get", "/setting/vpn", null, false, function (res) {
+                if (res.code === 0) {
+                    $("#dataAlert").text("全站视频数：" + res.data.vN + "，图片数：" + res.data.pN);
+                } else {
+                    layer.msg(res.message, {icon: 2});
                 }
             },
             function () {
@@ -53,17 +91,14 @@
     // 初始化首页主体内容
     function initIndexBodyContent(category) {
         let html = '';
-
         for(let i=0; i<category.length; i++) {
-            let id = category[i].id;
+            let id = category[i].id, latest = '',hot = '';
             let navTabs = '<ul class="nav nav-tabs" role="tablist">\n' +
                 '       <li class="tab_title">'+category[i].name+'</li>\n' +
                 '       <li role="presentation" class="active"><a href="#latest_'+id+'" aria-controls="latest_tab" role="tab" data-toggle="tab">最新投稿</a></li>\n' +
                 '       <li role="presentation"><a href="#hot_'+id+'" aria-controls="hot_tab" role="tab" data-toggle="tab">最热播放</a></li>\n' +
                 '<li style="float: right;"><a href="/category/'+category[i].id+'">查看更多<i class="icon icon-angle-right"></i></a></li>\n' +
                 '   </ul>\n';
-
-            let latest = '',hot = '';
 
             // 读取最新投稿
             sendJson("get", "/content/"+id+"/latest", {level:1}, false, function (res) {
@@ -90,7 +125,7 @@
                                 '            <div class="card-heading"><strong>'+data[j].name+'</strong></div>\n' +
                                 '            <div class="card-actions">\n' +
                                 '                <div class="pull-left"><i class="icon-safari"></i>125</div>\n' +
-                                '                <div class="pull-right"><i class="icon-comments-alt"></i>66</div>\n' +
+                                '                <div class="pull-right"><i class="icon-comments-alt"></i>'+data[j].commentCount+'</div>\n' +
                                 '            </div>\n' +
                                 '        </a>\n' +
                                 '    </div>';
@@ -98,7 +133,7 @@
 
                         latest += '</div>\n';
                     } else {
-                        layer.msg(res.info, {icon: 2});
+                        layer.msg(res.message, {icon: 2});
                     }
                 },
                 function () {
@@ -130,7 +165,7 @@
                                 '            <div class="card-heading"><strong>'+data[j].name+'</strong></div>\n' +
                                 '            <div class="card-actions">\n' +
                                 '                <div class="pull-left"><i class="icon-safari"></i>125</div>\n' +
-                                '                <div class="pull-right"><i class="icon-comments-alt"></i>66</div>\n' +
+                                '                <div class="pull-right"><i class="icon-comments-alt"></i>'+data[j].commentCount+'</div>\n' +
                                 '            </div>\n' +
                                 '        </a>\n' +
                                 '    </div>';
@@ -138,7 +173,7 @@
 
                         hot += '</div>\n';
                     } else {
-                        layer.msg(res.info, {icon: 2});
+                        layer.msg(res.message, {icon: 2});
                     }
                 },
                 function () {

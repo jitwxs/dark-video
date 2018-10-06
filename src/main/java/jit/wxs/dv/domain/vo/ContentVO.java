@@ -17,4 +17,6 @@ public class ContentVO {
     private String type;
 
     private String duration;
+
+    private Integer commentCount;
 }

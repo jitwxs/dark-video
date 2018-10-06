@@ -11,7 +11,7 @@
  Target Server Version : 50719
  File Encoding         : 65001
 
- Date: 05/10/2018 11:31:40
+ Date: 06/10/2018 00:03:01
 */
 
 SET NAMES utf8mb4;
@@ -70,6 +70,19 @@ CREATE TABLE `dv_content_affix`  (
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `dc_category`(`content_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '内容附件【三级目录内所有内容】表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for dv_content_comment
+-- ----------------------------
+DROP TABLE IF EXISTS `dv_content_comment`;
+CREATE TABLE `dv_content_comment`  (
+  `id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字符串ID',
+  `content_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '所属内容',
+  `content` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '评论内容（255内）',
+  `username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '发表用户',
+  `create_date` datetime(0) NULL DEFAULT NULL COMMENT '发表时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '内容评论表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for sys_login

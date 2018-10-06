@@ -5,32 +5,116 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${content.name}+' - Dark Video'"></title>
+
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/common.css}" rel="stylesheet">
+    <!-- 推荐区域样式 -->
+    <link th:href="@{/assets/css/owl.carousel.min.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/recommend.css}" rel="stylesheet">
+    <style>
+        a:link,a:visited{
+            color:#000000;
+            text-decoration:none;  /*超链接无下划线*/
+        }
+        a:hover{
+            text-decoration:none;  /*鼠标放上去有下划线*/
+        }
+    </style>
 </head>
 <body>
 
 <!-- 头部 -->
 <nav th:replace="common/nav::html"></nav>
-
 <div class="container">
     <!-- 类别导航 -->
     <nav th:replace="common/category_nav::html"></nav>
-    <!-- 如果是视频内容 -->
-    <div class="row" th:if="${type == 'video'}">
-        <h3>VIDEO</h3>
+    <!-- 内容区域 -->
+    <div class="row">
+        <!-- 如果是视频内容 -->
+        <div class="row" th:if="${type == 'video'}">
+            <div th:replace="common/video_player::html"></div>
+        </div>
+        <!-- 如果是目录内容 -->
+        <div class="row" th:if="${type == 'dir'}">
+            <div th:if="not ${#lists.isEmpty(videoBO)}" th:replace="common/video_player::html"></div>
+        </div>
     </div>
-    <!-- 如果是目录内容 -->
-    <div class="row" th:if="${type == 'dir'}">
-        <h3>DIR</h3>
-    </div>
+    <!-- 推荐区域 -->
+    <div th:replace="common/recommend::html"></div>
+    <!-- 评论区域 -->
+    <hr><div th:replace="common/comment::html"></div>
 </div>
 
 <script th:src="@{/assets/js/jquery.js}"></script>
 <script th:src="@{/assets/js/http.js}"></script>
 <script th:src="@{/assets/layer/layer.js}"></script>
 <script th:src="@{/assets/zui/js/zui.min.js}"></script>
-<script>
 
+<!-- 推荐区域轮播图 -->
+<script th:src="@{/assets/js/owl.carousel.min.js}"></script>
+<script>
+    $(function () {
+        // 加载推荐
+        $('.mhn-slide').owlCarousel({
+            nav:true,
+            // loop:true,
+            slideBy:'page',
+            rewind:false,
+            responsive:{
+                0:{items:1},
+                480:{items:2},
+                600:{items:3},
+                1000:{items:4}
+            },
+            smartSpeed:70,
+            onInitialized:function(e){
+                $(e.target).find('img').each(function(){
+                    if(this.complete){
+                        $(this).closest('.mhn-inner').find('.loader-circle').hide();
+                    }else{
+                        $(this).bind('load',function(e){
+                            $(e.target).closest('.mhn-inner').find('.loader-circle').hide();
+                        });
+                    }
+                });
+            },
+            navText:['<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg>','<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>']
+        });
+    });
+</script>
+
+<!-- Video组件JS -->
+<script th:if="not ${#lists.isEmpty(videoBO)}" th:src="@{/assets/js/flv.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(videoBO)}">
+    var videoElement = document.getElementById('videoPlayer');
+
+    $('[data-tab]').on('show.zui.tab', function(e) {
+        let contentSuffixId = $(e.target).attr("data_id");
+        sendJson("get", "/content/suffix/"+contentSuffixId, null, false, function (res) {
+                if (res.code === 0) {
+                    $("#contentModalTitle").text(res.data.name);
+                    $("#contentModalSize").text(res.data.size);
+                    $("#contentModalResolution").text(res.data.resolution);
+                    $("#contentModalFrameRate").text(res.data.frameRate);
+
+                    // 加载播放器
+                    let flvPlayer = flvjs.createPlayer({
+                        type: res.data.suffix,
+                        url: res.data.url
+                    });
+                    flvPlayer.attachMediaElement(videoElement);
+                    flvPlayer.load();
+
+                    // 展示tab页
+                    $('#videoTab').tab('show');
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    });
 </script>
 
 </body>
