@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="jit.wxs.dv.mapper.DvContentMapper">
+    <update id="setThumbnail">
+        UPDATE `dv_content` SET `thumbnail`=#{thumbnail} WHERE `id`=#{contentId}
+    </update>
+    <update id="updateHot">
+         UPDATE `dv_content` SET `hot`=#{hot} WHERE `id`=#{contentId}
+    </update>
 
     <select id="listIdsByFirstCategory" resultType="java.lang.String">
         SELECT id FROM `dv_content` WHERE `first_category` = #{firstCategory}

@@ -9,13 +9,14 @@ import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.vo.ContentVO;
 import jit.wxs.dv.domain.vo.ResultVO;
+import jit.wxs.dv.mapper.DvContentCommentMapper;
 import jit.wxs.dv.mapper.DvContentMapper;
+import jit.wxs.dv.mapper.SysLoginMapper;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.service.SysSettingService;
 import jit.wxs.dv.util.FileUtils;
 import jit.wxs.dv.util.ResultVOUtils;
-import jit.wxs.dv.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,8 +27,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +48,10 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     @Autowired
     private DvContentMapper contentMapper;
     @Autowired
+    private DvContentCommentMapper contentCommentMapper;
+    @Autowired
+    private SysLoginMapper loginMapper;
+    @Autowired
     private DvContentAffixService contentAffixService;
     @Autowired
     private SysSettingService settingService;
@@ -53,6 +59,9 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     private SettingConfig settingConfig;
     @Autowired
     private ContentVOConvert contentVOConvert;
+
+    private final static double HOT_S0 = 100;
+    private final static double HOT_MAX = 300;
 
     @Override
     public void genContent(String path, String url, String firstCategory, String secondCategory, boolean hasSecondCategory) {
@@ -96,10 +105,9 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
 
     @Override
     public ResultVO listHotContent(CategoryLevelEnum levelEnum, String category, int count) {
-        // TODO hot
         List<DvContent> selectList = contentMapper.selectList(new EntityWrapper<DvContent>()
                 .eq(levelEnum.getMessage(), category)
-//                .orderBy("create_date",false)
+                .orderBy("hot",false)
                 .last("LIMIT " + count));
 
         return ResultVOUtils.success(contentVOConvert.convert(selectList));
@@ -146,6 +154,31 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
         }
 
         return contentVOConvert.convert(contents);
+    }
+
+    @Override
+    public void setHot(String contentId, Integer click) {
+        DvContent content = contentMapper.selectById(contentId);
+        if(content != null) {
+            // 计算S(Users) = (1 * click + 10 * comment) / userNum * N
+            click = content.getClick() + click;
+            int comment = contentCommentMapper.countByContentId(contentId);
+            int userNum = loginMapper.countUser();
+            double sUsers = (click + comment * 10) * 10.0 / userNum;
+
+            // 计算S(Time) = e ^ (k*(T1 – T0))
+            double gap = (System.currentTimeMillis() - content.getCreateDate().getTime()) * 1.0 / 86400_000 / 100;
+            double sTime = Math.pow(2.718,gap);
+            // 计算SO
+            double s0 = getHotS0(content.getType());
+
+            // hot = [S0 + S(Users)] / S(Time)
+            int hot = (int)((s0 + sUsers) / sTime);
+            // 更新数据
+            content.setClick(click);
+            content.setHot(hot);
+            contentMapper.updateById(content);
+        }
     }
 
     /**
@@ -205,8 +238,8 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
             content.setType("other");
         }
 
-        // 设置视频缩略图
-        if ("video".equals(content.getType())) {
+        // 设置视频和图片缩略图
+        if ("video".equals(content.getType()) || "picture".equals(content.getType())) {
             // 缩略图目标文件夹 /id[:2]
             String relativePath = File.separator + content.getId().substring(0,2);
             // 缩略图完整文件夹完整路径 resRoot/Thumbnail/id[:2]
@@ -228,6 +261,11 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
                             FileUtils.fetchFrame(file.getPath(),thumbnailPath, (int)videoInfo.get("duration"), "200x112");
                             log.info("新增视频缩略图：{}", thumbnailPath);
                             break;
+                        case "picture":
+                            // （256 * n） 16:9
+                            FileUtils.resizeImage(file.getPath(), thumbnailPath, 348);
+                            log.info("新增图片缩略图：{}", thumbnailPath);
+                            break;
                         default:
                             break;
                     }
@@ -242,5 +280,21 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
         }
 
         return content;
+    }
+
+    /**
+     * 获取热度初始值
+     * @author jitwxs
+     * @since 2018/10/7 17:27
+     */
+    private double getHotS0(String type) {
+        switch (type) {
+            case "video":
+                return HOT_S0 * 2.0;
+            case "picture":
+                return HOT_S0 * 1.5;
+            default:
+                return HOT_S0 * 1.3;
+        }
     }
 }

@@ -8,9 +8,12 @@
 
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
     <link th:href="@{/assets/css/common.css}" rel="stylesheet">
-    <!-- 推荐区域样式 -->
+    <link th:href="@{/assets/css/footer.css}" rel="stylesheet">
+    <!-- 推荐区域CSS -->
     <link th:href="@{/assets/css/owl.carousel.min.css}" rel="stylesheet">
     <link th:href="@{/assets/css/recommend.css}" rel="stylesheet">
+    <!-- 图片播放器CSS -->
+    <link th:if="not ${#lists.isEmpty(pictureBO)}" th:href="@{/assets/lightgallery/css/lightgallery.min.css}" rel="stylesheet">
     <style>
         a:link,a:visited{
             color:#000000;
@@ -34,9 +37,21 @@
         <div class="row" th:if="${type == 'video'}">
             <div th:replace="common/video_player::html"></div>
         </div>
+        <!-- 如果是图片内容 -->
+        <div class="row" th:if="${type == 'picture'}">
+            <div th:replace="common/picture_player::html"></div>
+        </div>
         <!-- 如果是目录内容 -->
         <div class="row" th:if="${type == 'dir'}">
-            <div th:if="not ${#lists.isEmpty(videoBO)}" th:replace="common/video_player::html"></div>
+            <!-- 是否加载视频播放器 -->
+            <div class="row" th:if="not ${#lists.isEmpty(videoBO)}">
+                <div th:replace="common/video_player::html"></div>
+            </div>
+            <!-- 是否加载图片播放器 -->
+            <hr>
+            <div class="row" th:if="not ${#lists.isEmpty(pictureBO)}">
+                <div th:replace="common/picture_player::html"></div>
+            </div>
         </div>
     </div>
     <!-- 推荐区域 -->
@@ -44,6 +59,7 @@
     <!-- 评论区域 -->
     <hr><div th:replace="common/comment::html"></div>
 </div>
+<div th:replace="common/footer::html"></div>
 
 <script th:src="@{/assets/js/jquery.js}"></script>
 <script th:src="@{/assets/js/http.js}"></script>
@@ -83,7 +99,7 @@
     });
 </script>
 
-<!-- Video组件JS -->
+<!-- 视频播放器JS -->
 <script th:if="not ${#lists.isEmpty(videoBO)}" th:src="@{/assets/js/flv.min.js}"></script>
 <script th:if="not ${#lists.isEmpty(videoBO)}">
     var videoElement = document.getElementById('videoPlayer');
@@ -115,6 +131,17 @@
                 layer.msg("未知错误", {icon: 2});
             });
     });
+</script>
+
+<!-- 图片播放器JS -->
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/js/lightgallery.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/lib/lg-autoplay.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/lib/lg-zoom.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/lib/lg-thumbnail.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/lib/lg-fullscreen.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}" th:src="@{/assets/lightgallery/lib/lg-hash.min.js}"></script>
+<script th:if="not ${#lists.isEmpty(pictureBO)}">
+    lightGallery(document.getElementById('lightgallery'));
 </script>
 
 </body>

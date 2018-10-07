@@ -1,5 +1,6 @@
 package jit.wxs.dv.util;
 
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,5 +84,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         } else {
             return str;
         }
+    }
+
+    public static void main(String[] args) throws ParseException {
     }
 }

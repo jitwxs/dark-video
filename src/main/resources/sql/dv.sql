@@ -11,7 +11,7 @@
  Target Server Version : 50719
  File Encoding         : 65001
 
- Date: 06/10/2018 00:03:01
+ Date: 07/10/2018 20:23:47
 */
 
 SET NAMES utf8mb4;
@@ -41,6 +41,8 @@ CREATE TABLE `dv_content`  (
   `second_category` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '所属二级分类',
   `path` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '路径',
   `type` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '类型',
+  `click` int(10) NULL DEFAULT 0 COMMENT '点击量',
+  `hot` int(10) NULL DEFAULT NULL COMMENT '热度值',
   `size` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '大小',
   `thumbnail` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '缩略图路径',
   `duration` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '时长',
@@ -85,6 +87,18 @@ CREATE TABLE `dv_content_comment`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '内容评论表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Table structure for persistent_logins
+-- ----------------------------
+DROP TABLE IF EXISTS `persistent_logins`;
+CREATE TABLE `persistent_logins`  (
+  `username` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `series` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `token` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `last_used` timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0),
+  PRIMARY KEY (`series`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
 -- Table structure for sys_login
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_login`;
@@ -100,8 +114,8 @@ CREATE TABLE `sys_login`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_setting`;
 CREATE TABLE `sys_setting`  (
-  `k` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `v` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `k` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `v` varchar(1000) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   PRIMARY KEY (`k`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 

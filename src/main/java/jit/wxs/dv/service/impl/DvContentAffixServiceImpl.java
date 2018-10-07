@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import jit.wxs.dv.config.SettingConfig;
 import jit.wxs.dv.domain.entity.DvContentAffix;
 import jit.wxs.dv.mapper.DvContentAffixMapper;
+import jit.wxs.dv.mapper.DvContentMapper;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.SysSettingService;
 import jit.wxs.dv.util.FileUtils;
+import jit.wxs.dv.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,6 +35,8 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
     @Autowired
     private DvContentAffixMapper contentAffixMapper;
     @Autowired
+    private DvContentMapper contentMapper;
+    @Autowired
     private SysSettingService sysSettingService;
 
     @Autowired
@@ -41,6 +45,7 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
     @Override
     public void genContentAffix(File rootFile, String contentId) {
         String resContent = sysSettingService.getResContent();
+        String parentThumbnail = null;
 
         // 获取数据库中原始内容，用于删除失效内容
         List<String> dbIds = contentAffixMapper.listIdsByContentId(contentId);
@@ -59,7 +64,17 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
             }
 
             DvContentAffix contentAffix = parserContentAffix(id,contentId, url,file);
+
+            if(parentThumbnail == null && StringUtils.isNotBlank(contentAffix.getThumbnail())) {
+                parentThumbnail = contentAffix.getThumbnail();
+            }
+
             contentAffixMapper.insert(contentAffix);
+        }
+
+        // 设置父文件的缩略图，取第一个内容的缩略图即可
+        if(parentThumbnail != null) {
+            contentMapper.setThumbnail(parentThumbnail, contentId);
         }
 
         // 删除失效的内容数据
@@ -108,8 +123,8 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
             contentAffix.setType("other");
         }
 
-        // 设置视频缩略图
-        if ("video".equals(contentAffix.getType())) {
+        // 设置视频和图片缩略图
+        if ("video".equals(contentAffix.getType()) || "picture".equals(contentAffix.getType())) {
             // 缩略图目标文件夹 /id[:2]
             String relativePath = File.separator + contentAffix.getId().substring(0,2);
             // 缩略图完整文件夹完整路径 resRoot/Thumbnail/id[:2]
@@ -119,12 +134,22 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
             String thumbnailPath = thumbnailDir + File.separator + contentAffix.getId() + ".jpg";
 
             try {
+                // 判断文件夹是否存在
+                if(!thumbnailDir.exists()) {
+                    FileUtils.forceMkdir(thumbnailDir);
+                }
+
                 // 如果缩略图不存在，生成缩略图
                 if (!FileUtils.directoryContains(thumbnailDir, new File(thumbnailPath))) {
                     switch (contentAffix.getType()) {
                         case "video":
                             FileUtils.fetchFrame(file.getPath(),thumbnailPath, (int)videoInfo.get("duration"), "200x112");
                             log.info("新增视频缩略图：{}", thumbnailPath);
+                            break;
+                        case "picture":
+                            // （256 * n） 16:9
+                            FileUtils.resizeImage(file.getPath(), thumbnailPath, 348);
+                            log.info("新增图片缩略图：{}", thumbnailPath);
                             break;
                         default:
                             break;

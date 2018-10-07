@@ -35,4 +35,8 @@ public interface DvContentMapper extends BaseMapper<DvContent> {
      * @since 2018/10/4 23:38
      */
     List<DvContent> pageByCategory(@Param("column") String column,@Param("category") String category, Pagination pagination);
+
+    void setThumbnail(@Param("thumbnail") String thumbnail, @Param("contentId") String contentId);
+
+    void updateHot(@Param("hot") Integer hot,@Param("contentId") String contentId);
 }

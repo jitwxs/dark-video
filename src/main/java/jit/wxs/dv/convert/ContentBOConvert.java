@@ -1,6 +1,7 @@
 package jit.wxs.dv.convert;
 
 import jit.wxs.dv.domain.bo.ContentBO;
+import jit.wxs.dv.domain.bo.PictureBO;
 import jit.wxs.dv.domain.bo.VideoBO;
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.entity.DvContentAffix;
@@ -48,18 +49,19 @@ public class ContentBOConvert {
         return list;
     }
 
-    public ContentBO convertAffix2BO(DvContentAffix contentAffix, Date createDate) {
+    public ContentBO convertAffix2BO(DvContentAffix contentAffix, Date createDate, String author) {
         DvContent content = new DvContent();
         BeanUtils.copyProperties(contentAffix, content);
         content.setCreateDate(createDate);
+        content.setAuthor(author);
 
         return convert2BO(content);
     }
 
-    public List<ContentBO> convertAffix2BO(List<DvContentAffix> contentAffixes, Date createDate) {
+    public List<ContentBO> convertAffix2BO(List<DvContentAffix> contentAffixes, Date createDate, String author) {
         List<ContentBO> list = new LinkedList<>();
         for(DvContentAffix affix : contentAffixes) {
-            list.add(convertAffix2BO(affix, createDate));
+            list.add(convertAffix2BO(affix, createDate, author));
         }
         return list;
     }
@@ -91,18 +93,61 @@ public class ContentBOConvert {
         return list;
     }
 
-    public VideoBO convertAffix2Video(DvContentAffix contentAffix, Date createDate) {
+    public VideoBO convertAffix2Video(DvContentAffix contentAffix, Date createDate, String author) {
         DvContent content = new DvContent();
         BeanUtils.copyProperties(contentAffix, content);
         content.setCreateDate(createDate);
+        content.setAuthor(author);
 
         return convert2Video(content);
     }
 
-    public List<VideoBO> convertAffix2Video(List<DvContentAffix> contentAffixes, Date createDate) {
+    public List<VideoBO> convertAffix2Video(List<DvContentAffix> contentAffixes, Date createDate, String author) {
         List<VideoBO> list = new LinkedList<>();
         for(DvContentAffix affix : contentAffixes) {
-            list.add(convertAffix2Video(affix, createDate));
+            list.add(convertAffix2Video(affix, createDate, author));
+        }
+        return list;
+    }
+
+    public PictureBO convert2Picture(DvContent content) {
+        PictureBO pictureBO = new PictureBO();
+        BeanUtils.copyProperties(content, pictureBO);
+
+        // 设置Url
+        pictureBO.setUrl(settingService.getContentIp() + "/" + content.getPath().replace("\\","/"));
+        // 设置后缀
+        pictureBO.setSuffix(StringUtils.getSuffix(content.getName()));
+        // 设置去除后缀后的文件名
+        pictureBO.setName(StringUtils.getPrefix(content.getName()));
+        // 设置缩略图Url
+        String thumbnailPath = content.getThumbnail();
+        if(StringUtils.isNotBlank(thumbnailPath)) {
+            pictureBO.setThumbnail(thumbnailService.getUrl(thumbnailPath));
+        }
+
+        return pictureBO;
+    }
+
+    public List<PictureBO> convert2Picture(List<DvContent> contents) {
+        List<PictureBO> list = new LinkedList<>();
+        for(DvContent content : contents) {
+            list.add(convert2Picture(content));
+        }
+        return list;
+    }
+
+    public PictureBO convertAffix2Picture(DvContentAffix pictureAffixes) {
+        DvContent content = new DvContent();
+        BeanUtils.copyProperties(pictureAffixes, content);
+
+        return convert2Picture(content);
+    }
+
+    public List<PictureBO> convertAffix2Picture(List<DvContentAffix> pictureAffixes) {
+        List<PictureBO> list = new LinkedList<>();
+        for(DvContentAffix affix : pictureAffixes) {
+            list.add(convertAffix2Picture(affix));
         }
         return list;
     }

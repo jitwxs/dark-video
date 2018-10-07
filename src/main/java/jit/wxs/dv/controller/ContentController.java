@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import jit.wxs.dv.convert.ContentBOConvert;
 import jit.wxs.dv.convert.ContentVOConvert;
 import jit.wxs.dv.domain.bo.ContentBO;
+import jit.wxs.dv.domain.bo.PictureBO;
 import jit.wxs.dv.domain.bo.VideoBO;
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.entity.DvContentAffix;
@@ -13,6 +14,7 @@ import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.vo.ContentVO;
 import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.domain.vo.TreeVO;
+import jit.wxs.dv.schedule.CachePool;
 import jit.wxs.dv.service.DvCategoryService;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentCommentService;
@@ -69,10 +71,19 @@ public class ContentController {
             }
         }
 
+        // 记录点击数
+        CachePool cachePool = CachePool.getInstance();
+        if(cachePool.getCacheItem(contentId) != null) {
+            cachePool.putCacheItem(contentId, (int)cachePool.getCacheItem(contentId) + 1);
+        } else {
+            cachePool.putCacheItem(contentId, 1);
+        }
+
         map.put("content", contentVOConvert.convert(content));
         map.put("type", content.getType());
 
         List<VideoBO> videoBOS = new LinkedList<>();
+        List<PictureBO> pictureBOS = new LinkedList<>();
         List<ContentBO> contentBOS = new LinkedList<>();
         // 判断类型
         switch (content.getType()) {
@@ -82,6 +93,9 @@ public class ContentController {
                 map.put("videoBO", videoBOS);
                 break;
             case "picture":
+                PictureBO pictureBO = contentBOConvert.convert2Picture(content);
+                pictureBOS.add(pictureBO);
+                map.put("pictureBO", pictureBOS);
             case "music":
             case "page":
                 ContentBO contentBO = contentBOConvert.convert2BO(content);
@@ -94,15 +108,22 @@ public class ContentController {
                                 .eq("content_id", contentId)
                                 .eq("type", "video")
                                 .orderBy("name", true));
+                List<DvContentAffix> pictureAffixes =
+                        contentAffixService.selectList(new EntityWrapper<DvContentAffix>()
+                                .eq("content_id", contentId)
+                                .eq("type", "picture")
+                                .orderBy("name", true));
                 List<DvContentAffix> otherAffixes =
                         contentAffixService.selectList(new EntityWrapper<DvContentAffix>()
                                 .eq("content_id", contentId)
                                 .ne("type", "video")
                                 .orderBy("name", true));
 
-                videoBOS = contentBOConvert.convertAffix2Video(videoAffixes, content.getCreateDate());
-                contentBOS = contentBOConvert.convertAffix2BO(otherAffixes, content.getCreateDate());
+                videoBOS = contentBOConvert.convertAffix2Video(videoAffixes, content.getCreateDate(), content.getAuthor());
+                pictureBOS = contentBOConvert.convertAffix2Picture(pictureAffixes);
+                contentBOS = contentBOConvert.convertAffix2BO(otherAffixes, content.getCreateDate(), content.getAuthor());
                 map.put("videoBO", videoBOS);
+                map.put("pictureBO", pictureBOS);
                 map.put("contentBO",contentBOS);
                 break;
             default:
@@ -178,9 +199,9 @@ public class ContentController {
         DvContentAffix contentAffix = contentAffixService.selectById(suffix);
 
         if("video".equals(contentAffix.getType())) {
-            return ResultVOUtils.success(contentBOConvert.convertAffix2Video(contentAffix, null));
+            return ResultVOUtils.success(contentBOConvert.convertAffix2Video(contentAffix, null, null));
         } else {
-            return ResultVOUtils.success(contentBOConvert.convertAffix2BO(contentAffix, null));
+            return ResultVOUtils.success(contentBOConvert.convertAffix2BO(contentAffix, null, null));
         }
     }
 }

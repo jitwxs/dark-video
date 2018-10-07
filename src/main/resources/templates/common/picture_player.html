@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+
+<p style="font-size: 18px;line-height: 24px;margin-bottom: 30px;">图片附件</p>
+<ul id="lightgallery" class="list-unstyled row">
+    <li class="col-xs-6 col-sm-4 col-md-3" th:each="picture : ${pictureBO}"
+        th:attr="data-src=${picture.url},data-sub-html=${'<h4>'+picture.name+'</h4>'}">
+        <a href="">
+            <img class="img-responsive" th:src="${picture.thumbnail}" th:alt="${picture.name}">
+        </a>
+    </li>
+</ul>
+
+</html>

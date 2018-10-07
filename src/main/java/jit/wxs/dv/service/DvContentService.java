@@ -61,4 +61,12 @@ public interface DvContentService extends IService<DvContent> {
      * @since 2018/10/6 20:55
      */
     List<ContentVO> listRecommend(DvContent content, int count);
+
+    /**
+     * 设置热度值
+     * @param click 新增点击量
+     * @author jitwxs
+     * @since 2018/10/7 17:17
+     */
+    void setHot(String contentId, Integer click);
 }

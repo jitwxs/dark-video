@@ -2,6 +2,7 @@ package jit.wxs.dv.security;
 
 import jit.wxs.dv.filter.VerifyFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -12,6 +13,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 /**
  * @author jitwxs
@@ -24,6 +29,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private DataSource dataSource;
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(){
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        // 如果token表不存在，使用下面语句可以初始化该表；若存在，会报错。
+//        tokenRepository.setCreateTableOnStartup(true);
+        return tokenRepository;
+    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -58,7 +75,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new VerifyFilter(),UsernamePasswordAuthenticationFilter.class)
                 .logout().permitAll()
                 // 自动登录
-                .and().rememberMe();
+                .and().rememberMe()
+                    .tokenRepository(persistentTokenRepository())
+                    // 有效时间：单位s
+                    .tokenValiditySeconds(600)
+                    .userDetailsService(userDetailsService);
 
         http.csrf().disable();
     }

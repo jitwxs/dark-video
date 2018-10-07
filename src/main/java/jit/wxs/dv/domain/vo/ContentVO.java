@@ -19,4 +19,6 @@ public class ContentVO {
     private String duration;
 
     private Integer commentCount;
+
+    private Integer hot;
 }

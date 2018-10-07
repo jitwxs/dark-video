@@ -44,6 +44,14 @@ public class DvContent implements Serializable {
      */
     private String type;
     /**
+     * 点击率
+     */
+    private Integer click;
+    /**
+     * 热度值
+     */
+    private Integer hot;
+    /**
      * 大小
      */
     private String size;

@@ -1,37 +1,67 @@
 <!DOCTYPE html>
-<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
     <title>登陆 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <script th:src="@{/assets/js/jquery.js}"></script>
+    <script th:src="@{/assets/zui/js/zui.min.js}"></script>
+    <style>
+        body{
+            background: url("/assets/image/1.jpg");
+            animation-name:myfirst;
+            animation-duration:12s;
+            /*变换时间*/
+            animation-delay:2s;
+            /*动画开始时间*/
+            animation-iteration-count:infinite;
+            /*下一周期循环播放*/
+            animation-play-state:running;
+            /*动画开始运行*/
+        }
+        @keyframes myfirst
+        {
+            0%   {background:url("/assets/image/1.jpg");}
+            34%  {background:url("/assets/image/2.jpg");}
+            67%  {background:url("/assets/image/3.jpg");}
+            100% {background:url("/assets/image/4.jpg");}
+        }
+        .form{background: rgba(255,255,255,0.2);width:400px;margin:120px auto;}
+        /*阴影*/
+        .fa{display: inline-block;top: 27px;left: 6px;position: relative;color: #ccc;}
+        input[type="text"],input[type="password"]{padding-left:26px;}
+        .checkbox{padding-left:21px;}
+    </style>
 </head>
 <body>
-
-    <div class="container">
-        <form class="form-horizontal" method="post" action="/login">
-            <div class="input-control has-icon-left">
-                <input type="text" class="form-control" id="inputUsername" name="username" placeholder="用户名" required>
-                <label for="inputUsername" class="input-control-icon-left"><i class="icon icon-user "></i></label>
-            </div>
-            <div class="input-control has-icon-left">
-                <input id="inputPassword" type="password" class="form-control" name="password" placeholder="密码" required>
-                <label for="inputPassword" class="input-control-icon-left"><i class="icon icon-leaf "></i></label>
-            </div>
-            <div class="input-control has-icon-left">
-                <input type="text" class="form-control" id="inputVerifyCode" name="verifyCode" placeholder="验证码" required>
-                <label for="inputVerifyCode" class="input-control-icon-left"><i class="icon icon-barcode "></i></label>
-            </div>
-            <div class="input-control has-icon-left">
-                <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>
-                <button class="btn btn-primary" type="submit">登陆</button>
-            </div>
-        </form>
+<div class="container">
+    <div class="form row">
+        <div class="form-horizontal col-md-offset-3" id="login_form">
+            <h3 class="form-title">LOGIN</h3>
+            <form class="form-horizontal" method="post" action="/login">
+                <div class="col-md-9">
+                    <div class="form-group">
+                        <input class="form-control" type="text" placeholder="用户名" name="username" autofocus="autofocus" required/>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="inputPassword" type="password" placeholder="密码" name="password" required/>
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" type="text" placeholder="验证码" name="verifyCode" maxlength="4" required/>
+                    </div>
+                    <div class="form-group">
+                        <img src="getVerifyCode" title="看不清，请点我" onclick="refresh(this)" onmouseover="mouseover(this)"/>
+                        <input type="checkbox" name="remember-me" style="margin-left: 20px;"/>记住我
+                    </div>
+                    <div class="form-group col-md-offset-9">
+                        <a>没有账号？点我注册</a>
+                        <button type="submit" class="btn btn-success pull-right" name="submit">登录</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-
-<script th:src="@{/assets/js/jquery.js}"></script>
-<script th:src="@{/assets/zui/js/zui.min.js}"></script>
+</div>
 <script>
     function refresh(obj) {
         obj.src = "getVerifyCode?" + Math.random();

@@ -24,24 +24,27 @@
             <div class="panel panel-info">
                 <div class="panel-body">
                     <div class="input-group">
-                        <span class="input-group-addon">内容目录【末尾不要加斜杠】</span>
+                        <span class="input-group-addon">内容目录</span>
                         <input type="text" id="inputResContent" class="form-control">
                     </div><br>
                     <div class="input-group">
-                        <span class="input-group-addon">缩略图目录【末尾不要加斜杠】</span>
+                        <span class="input-group-addon">缩略图目录</span>
                         <input type="text" id="inputResThumbnail" class="form-control">
                     </div><br>
                     <div class="input-group">
-                        <span class="input-group-addon">内容服务器【末尾不要加斜杠】</span>
+                        <span class="input-group-addon">内容服务器</span>
                         <input type="text" id="inputContentIp" class="form-control">
                     </div><br>
                     <div class="input-group">
-                        <span class="input-group-addon">缩略图服务器【末尾不要加斜杠】</span>
+                        <span class="input-group-addon">缩略图服务器</span>
                         <input type="text" id="inputThumbnailIp" class="form-control">
                     </div><br>
                     <button class="btn btn-primary" type="button" onclick="updateRes()">更新配置信息</button>
-                    <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 重新生成目录/内容</button>
+                    <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 更新目录/内容</button>
                     <button class="btn btn-success" type="button" onclick="cleanThumbnail()" style="float:right"><i class="icon icon-eraser"></i> 清理缩略图</button>
+                </div>
+                <div class="panel-footer">
+                    所有配置末尾不要加斜杠，形如 http://www.aa.com/content
                 </div>
             </div>
         </div>
@@ -154,10 +157,10 @@
                 } else {
                     layer.msg("清理完成，共清理：" + res.data + " 个", {icon: 1});
                 }
+                layer.close(index);
             }, function () {
                 layer.msg("未知错误", {icon: 2});
             });
-            layer.close(index);
         }, function () {
         });
     }
@@ -174,10 +177,10 @@
                 } else {
                     layer.msg("生成成功", {icon: 1});
                 }
+                layer.close(index);
             }, function () {
                 layer.msg("未知错误", {icon: 2});
             });
-            layer.close(index);
         }, function () {
         });
     }
