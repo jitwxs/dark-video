@@ -69,4 +69,6 @@ public interface DvContentService extends IService<DvContent> {
      * @since 2018/10/7 17:17
      */
     void setHot(String contentId, Integer click);
+
+    List<DvContent> listAll();
 }

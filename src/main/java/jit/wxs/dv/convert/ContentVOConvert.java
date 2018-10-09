@@ -2,6 +2,7 @@ package jit.wxs.dv.convert;
 
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.vo.ContentVO;
+import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.service.ThumbnailService;
 import jit.wxs.dv.util.StringUtils;
@@ -23,6 +24,8 @@ public class ContentVOConvert {
     private ThumbnailService thumbnailService;
     @Autowired
     private DvContentCommentService contentCommentService;
+    @Autowired
+    private DvContentAffixService contentAffixService;
 
     public ContentVO convert(DvContent content) {
         ContentVO contentVO = new ContentVO();
@@ -39,6 +42,15 @@ public class ContentVOConvert {
 
         // 获取评论数
         contentVO.setCommentCount(contentCommentService.countByContentId(content.getId()));
+
+        // 设置描述
+        String desc = "";
+        if("dir".equals(content.getType())) {
+            desc = contentAffixService.getDesc(content.getId(), 5);
+        } else {
+            desc = "共包含1个内容";
+        }
+        contentVO.setDesc(desc);
 
         return contentVO;
     }

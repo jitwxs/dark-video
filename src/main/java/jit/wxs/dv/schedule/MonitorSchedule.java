@@ -20,11 +20,11 @@ public class MonitorSchedule {
 
     /**
      * 更新视频和图片数目
-     * 每隔30分钟更新
+     * 每隔24h更新
      * @author jitwxs
      * @since 2018/7/9 13:44
      */
-    @Scheduled(fixedDelay = 1800_000)
+    @Scheduled(fixedDelay = 86400_000)
     public void updateVideoAndPictureNum() {
         LocalDateTime time = LocalDateTime.now();
 

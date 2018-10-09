@@ -11,7 +11,7 @@
  Target Server Version : 50719
  File Encoding         : 65001
 
- Date: 07/10/2018 20:23:47
+ Date: 10/10/2018 00:48:39
 */
 
 SET NAMES utf8mb4;
@@ -85,6 +85,18 @@ CREATE TABLE `dv_content_comment`  (
   `create_date` datetime(0) NULL DEFAULT NULL COMMENT '发表时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '内容评论表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for dv_user_look_later
+-- ----------------------------
+DROP TABLE IF EXISTS `dv_user_look_later`;
+CREATE TABLE `dv_user_look_later`  (
+  `id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '字符串ID',
+  `username` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户名',
+  `content_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '内容ID',
+  `create_date` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '稍后再看表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for persistent_logins

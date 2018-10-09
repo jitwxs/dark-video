@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jit.wxs.dv.mapper.ESMapper">
+
+    <select id="getParentESContent" resultType="jit.wxs.dv.domain.entity.ESContent">
+        SELECT DISTINCT
+            `dv_content`.id,
+            `dv_content`.NAME
+        FROM
+            `dv_content_affix`,
+            `dv_content`
+        WHERE
+            `dv_content_affix`.content_id = `dv_content`.id
+        AND
+            `dv_content_affix`.content_id = (
+                SELECT content_id FROM `dv_content_affix` WHERE id = #{contentId}
+            )
+    </select>
+</mapper>

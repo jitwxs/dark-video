@@ -27,8 +27,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -179,6 +177,11 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
             content.setHot(hot);
             contentMapper.updateById(content);
         }
+    }
+
+    @Override
+    public List<DvContent> listAll() {
+        return contentMapper.selectList(new EntityWrapper<>());
     }
 
     /**

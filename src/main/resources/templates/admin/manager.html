@@ -40,6 +40,7 @@
                         <input type="text" id="inputThumbnailIp" class="form-control">
                     </div><br>
                     <button class="btn btn-primary" type="button" onclick="updateRes()">更新配置信息</button>
+                    <button class="btn btn-warning disabled" id="contentIndexBtn" type="button" onclick="buildContentIndex()">生成内容索引</button>
                     <button class="btn btn-danger" type="button" onclick="genDirectory()" style="float:right; margin-left: 10px;"><i class="icon icon-undo"></i> 更新目录/内容</button>
                     <button class="btn btn-success" type="button" onclick="cleanThumbnail()" style="float:right"><i class="icon icon-eraser"></i> 清理缩略图</button>
                 </div>
@@ -109,7 +110,53 @@
             function () {
                 layer.msg("未知错误", {icon: 2});
             });
+
+        // 检测索引
+        sendJson("get", "/es/content/exist", null, false, function (res) {
+                if (res.code !== 0) {
+                    layer.confirm('检测到内容索引没有初始化，是否立即初始化？', {
+                        btn: ['立即建立','以后再说'] //按钮
+                    }, function(){
+                        sendJson("post", "/es/content/create", null, false, function (res) {
+                                if (res.code === 0) {
+                                    layer.msg("索引初始化完成，请点击“生成内容索引”按钮建立索引", {icon: 1});
+                                } else {
+                                    layer.msg(res.message, {icon: 2});
+                                }
+                            },
+                            function () {
+                                layer.msg("未知错误", {icon: 2});
+                            });
+                    }, function(){
+                        return false;
+                    });
+                } else {
+                    $("#contentIndexBtn").removeClass("disabled");
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
     });
+
+    // 生成内容索引
+    function buildContentIndex() {
+        layer.confirm('此操作将会清空现有索引并重新建立，耗费一定时间，是否生成？', {
+            btn: ['确定','取消']
+        }, function(){
+            sendJson("post", "/es/content/build", null, false, function (res) {
+                    if (res.code === 0) {
+                        layer.msg("生成索引成功，共生成：" + res.data + " 条", {icon: 1});
+                    } else {
+                        layer.msg(res.message, {icon: 2});
+                    }
+                },
+                function () {
+                    layer.msg("未知错误", {icon: 2});
+                });
+        }, function(){
+        });
+    }
 
     // 更新资源
     function updateRes() {

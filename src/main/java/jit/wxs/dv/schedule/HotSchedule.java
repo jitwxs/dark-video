@@ -16,11 +16,11 @@ public class HotSchedule {
     private DvContentService contentService;
 
     /**
-     * 每隔10分钟更新
+     * 每隔30分钟更新
      * @author jitwxs
      * @since 2018/7/9 13:44
      */
-    @Scheduled(fixedDelay = 600_000)
+    @Scheduled(initialDelay=1800_000, fixedDelay = 600_000)
     public void updateHot() {
         CachePool cachePool = CachePool.getInstance();
         Set<String> strings = cachePool.listKeys();

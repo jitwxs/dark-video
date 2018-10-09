@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -86,6 +85,11 @@ public class DvContentAffixServiceImpl extends ServiceImpl<DvContentAffixMapper,
     @Override
     public List<DvContentAffix> listByContentId(String contentId) {
         return contentAffixMapper.selectList(new EntityWrapper<DvContentAffix>().eq("content_id", contentId));
+    }
+
+    @Override
+    public String getDesc(String contentId, int limit) {
+        return contentAffixMapper.getDesc(contentId, limit);
     }
 
     private DvContentAffix parserContentAffix(String id, String contentId, String path, File file) {

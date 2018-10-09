@@ -30,4 +30,6 @@ public interface DvContentAffixService extends IService<DvContentAffix> {
      * @since 2018/10/5 10:48
      */
     List<DvContentAffix> listByContentId(String contentId);
+
+    String getDesc(String contentId, int limit);
 }

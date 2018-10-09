@@ -2,6 +2,7 @@ package jit.wxs.dv.mapper;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import jit.wxs.dv.domain.entity.DvContentAffix;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -16,4 +17,11 @@ import java.util.List;
 public interface DvContentAffixMapper extends BaseMapper<DvContentAffix> {
 
     List<String> listIdsByContentId(String contentId);
+
+    /**
+     * 设置描述
+     * @author jitwxs
+     * @since 2018/10/9 21:59
+     */
+    String getDesc(@Param("containerId") String containerId, @Param("limit") int limit);
 }

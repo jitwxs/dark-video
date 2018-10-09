@@ -2,6 +2,8 @@ package jit.wxs.dv.domain.vo;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author jitwxs
  * @since 2018/10/5 10:55
@@ -21,4 +23,8 @@ public class ContentVO {
     private Integer commentCount;
 
     private Integer hot;
+
+    private Date createDate;
+
+    private String desc;
 }

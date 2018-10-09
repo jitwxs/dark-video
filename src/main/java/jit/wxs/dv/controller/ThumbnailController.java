@@ -29,5 +29,4 @@ public class ThumbnailController {
     public ResultVO cleanThumbnail() {
         return thumbnailService.cleanThumbnail();
     }
-
 }

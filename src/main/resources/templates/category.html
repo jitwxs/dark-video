@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${category.name}+' - Dark Video'"></title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
-    <link th:href="@{/assets/css/footer.css}" rel="stylesheet">
 </head>
 <body>
 
@@ -49,8 +48,6 @@
             th:attr="data-page=${contents.current}, data-rec-total=${contents.total}, data-rec-per-page=${contents.size}"></ul>
     </div>
 </div>
-
-<div th:replace="common/footer::html"></div>
 
 <script th:src="@{/assets/js/jquery.js}"></script>
 <script th:src="@{/assets/js/http.js}"></script>

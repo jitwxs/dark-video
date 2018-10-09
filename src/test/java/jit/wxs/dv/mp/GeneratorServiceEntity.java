@@ -19,8 +19,8 @@ public class GeneratorServiceEntity {
     public void generateCode() {
         String packageName = "jit.wxs.dv";
         String[] tables = {
-//                "sys_setting","sys_login","dv_content","dv_category","dv_content_affix"
-                "dv_content_comment"
+//                "sys_setting","sys_login","dv_content","dv_category","dv_content_affix","dv_content_comment"
+                "dv_user_look_later"
         };
         boolean serviceNameStartWithI = false;//user -> UserService, 设置成true: user -> IUserService
         generateByTables(serviceNameStartWithI, packageName, tables);

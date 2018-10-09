@@ -3,7 +3,6 @@ package jit.wxs.dv.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.entity.DvContentComment;
 import jit.wxs.dv.domain.entity.SysLogin;
 import jit.wxs.dv.domain.enums.ResultEnum;
@@ -13,7 +12,6 @@ import jit.wxs.dv.mapper.DvContentCommentMapper;
 import jit.wxs.dv.mapper.DvContentMapper;
 import jit.wxs.dv.mapper.SysLoginMapper;
 import jit.wxs.dv.service.DvContentCommentService;
-import jit.wxs.dv.service.SysLoginService;
 import jit.wxs.dv.util.ResultVOUtils;
 import jit.wxs.dv.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${keyword + ' - 搜索结果 - Dark Video'}">搜索结果 - Dark Video</title>
+    <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+</head>
+<body>
+
+<!-- 头部 -->
+<nav th:replace="common/nav::html"></nav>
+
+<div class="container">
+    <!-- 主体 -->
+    <div class="row">
+        <div class="cards cards-borderless">
+            <div class="col-md-4 col-sm-6 col-lg-3" th:each="esContent: ${page.records}">
+                <a class="card" target="_blank" th:href="${esContent.type == 0 ? '/content/' + esContent.id : '/content/' + esContent.parent.id}">
+                    <img th:src="${esContent.thumbnail}">
+                    <div class="card-heading"><strong th:utext="${esContent.type == 0 ? esContent.name : esContent.parent.name}"></strong></div>
+                    <div class="card-content text-muted" th:if="${esContent.type == 1}" th:utext="${esContent.name}"></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 分页器 -->
+        <ul id="myPager" class="pager" data-ride="pager" data-elements=["first","prev","nav","last","next","goto"]
+            th:attr="data-page=${page.current}, data-rec-total=${page.total}, data-rec-per-page=${page.size}"></ul>
+    </div>
+</div>
+
+<script th:src="@{/assets/js/jquery.js}"></script>
+<script th:src="@{/assets/js/http.js}"></script>
+<script th:src="@{/assets/layer/layer.js}"></script>
+<script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<script>
+    $('#myPager').on('onPageChange', function(e, state, oldState) {
+        if(oldState.page != null) {
+            if (state.page !== oldState.page) {
+                window.location.href = window.location.pathname + '?current=' + state.page;
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
