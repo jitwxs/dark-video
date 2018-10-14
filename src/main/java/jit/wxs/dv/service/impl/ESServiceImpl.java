@@ -12,16 +12,19 @@ import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.service.ESService;
 import jit.wxs.dv.service.ThumbnailService;
 import jit.wxs.dv.util.ResultVOUtils;
+import jit.wxs.dv.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.IdsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
@@ -31,7 +34,9 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,6 +62,10 @@ public class ESServiceImpl implements ESService {
     private DvContentAffixService contentAffixService;
     @Autowired
     private ThumbnailService thumbnailService;
+    @Autowired
+    private WebSocketServer webSocketServer;
+
+    private static final String CONTENT_INDEX = "content", CONTENT_TYPE = "default";
 
     @Override
     public boolean hasContentIndexExist() {
@@ -72,7 +81,7 @@ public class ESServiceImpl implements ESService {
             return ResultVOUtils.error(ResultEnum.CONTENT_INDEX_HAS_EXIST);
         }
 
-        CreateIndexRequest request = new CreateIndexRequest("content")
+        CreateIndexRequest request = new CreateIndexRequest(CONTENT_INDEX)
                 .source("{\n" +
                         "  \"settings\": {\n" +
                         "    \"number_of_shards\": 5,\n" +
@@ -114,13 +123,14 @@ public class ESServiceImpl implements ESService {
         }
     }
 
+    @Async("taskExecutor")
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultVO buildContentIndex() {
-        // 清空索引
-        cleanContentIndex();
+    public void buildContentIndex(String sessionId) {
+        IdsQueryBuilder idsQueryBuilder = QueryBuilders.idsQuery(CONTENT_TYPE);
 
-        // 建立索引
-        int count = 0;
+        // 建立 or 更新索引
+        int added = 0;
         for(DvContent content : contentService.listAll()) {
             String createDate = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(content.getCreateDate());
 
@@ -131,13 +141,14 @@ public class ESServiceImpl implements ESService {
 
             jsonMap.put("create_date", createDate);
 
-            IndexResponse response1 = transportClient.prepareIndex("content", "default", content.getId())
+            IndexResponse response1 = transportClient.prepareIndex(CONTENT_INDEX, CONTENT_TYPE, content.getId())
                     .setSource(jsonMap)
                     .get();
 
             if(response1.status() == RestStatus.CREATED) {
-                count++;
+                added++;
             }
+            idsQueryBuilder.addIds(content.getId());
 
             if("dir".equals(content.getType())) {
                 for(DvContentAffix affix : contentAffixService.listByContentId(content.getId())) {
@@ -147,27 +158,34 @@ public class ESServiceImpl implements ESService {
                     jsonMap1.put("type", 1);
                     jsonMap1.put("create_date", createDate);
 
-                    IndexResponse response2 = transportClient.prepareIndex("content", "default", affix.getId())
+                    IndexResponse response2 = transportClient.prepareIndex(CONTENT_INDEX, CONTENT_TYPE, affix.getId())
                             .setSource(jsonMap1)
                             .get();
 
                     if(response2.status() == RestStatus.CREATED) {
-                        count++;
+                        added++;
                     }
+                    idsQueryBuilder.addIds(affix.getId());
                 }
             }
         }
 
-        return ResultVOUtils.success(count);
+        // 清理失效文档
+
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .mustNot(idsQueryBuilder);
+        long deleted = cleanContentIndex(queryBuilder);
+
+        String message = "生成索引完成，新增索引：" + added + " 个，删除索引：" + deleted + " 个";
+
+        webSocketServer.sendMessage(message, sessionId);
     }
 
     @Override
-    public long cleanContentIndex() {
-        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                .must(QueryBuilders.matchAllQuery());
+    public long cleanContentIndex(BoolQueryBuilder queryBuilder) {
         BulkByScrollResponse response = DeleteByQueryAction.INSTANCE.newRequestBuilder(transportClient)
                 .filter(queryBuilder)
-                .source("content")
+                .source(CONTENT_INDEX)
                 .get();
         return response.getDeleted();
     }
@@ -178,8 +196,8 @@ public class ESServiceImpl implements ESService {
         Page<ESContent> page = new Page<>(current, size, "create_date", false);
 
         try {
-            SearchResponse response = transportClient.prepareSearch("content")
-                    .setTypes("default")
+            SearchResponse response = transportClient.prepareSearch(CONTENT_INDEX)
+                    .setTypes(CONTENT_TYPE)
                     .setQuery(QueryBuilders.matchQuery( "name", name))
                     .highlighter(new HighlightBuilder()
                             .field("name")
@@ -218,6 +236,12 @@ public class ESServiceImpl implements ESService {
         }
 
         return page;
+    }
+
+    @Override
+    public boolean hasContentDocumentExist(String documentId) {
+        GetResponse response = transportClient.prepareGet(CONTENT_INDEX, CONTENT_TYPE, documentId).get();
+         return response.isExists();
     }
 
 

@@ -1,10 +1,8 @@
 package jit.wxs.dv.controller;
 
-import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.util.ResultVOUtils;
-import jit.wxs.dv.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +25,7 @@ public class CommentController {
      */
     @GetMapping("/{contentId}/count")
     public ResultVO countByContentId(@PathVariable String contentId) {
-        if(StringUtils.isBlank(contentId)) {
-            return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
-        }
-
-        int i = contentCommentService.countByContentId(contentId);
-
-        return ResultVOUtils.success(i);
+        return ResultVOUtils.success(contentCommentService.countByContentId(contentId));
     }
 
     /**

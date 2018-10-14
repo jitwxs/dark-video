@@ -5,10 +5,10 @@ import jit.wxs.dv.domain.entity.DvContentAffix;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
+import jit.wxs.dv.handler.CustomException;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.util.ResultVOUtils;
-import jit.wxs.dv.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,12 +36,11 @@ public class ContentController {
      * @since 2018/10/4 15:00
      */
     @GetMapping("/{category}/latest")
-    public ResultVO listLatestContent(@PathVariable String category,
-                                      Integer level,
-                                      @RequestParam(defaultValue = "8") Integer count) {
-        CategoryLevelEnum levelEnum;
-        if(StringUtils.isBlank(category) || (levelEnum = CategoryLevelEnum.getEnum(level)) == null) {
-            return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
+    public ResultVO listLatestContent(@PathVariable String category, Integer level,
+                                      @RequestParam(defaultValue = "8") Integer count) throws CustomException {
+        CategoryLevelEnum levelEnum = CategoryLevelEnum.getEnum(level);
+        if(levelEnum == null) {
+            throw new CustomException(ResultEnum.PARAM_ERROR.getCode(), "目录级别不合法");
         }
 
         return contentService.listLatestContent(levelEnum, category, count);
@@ -57,11 +56,10 @@ public class ContentController {
      */
     @GetMapping("/{category}/hot")
     public ResultVO listHotContent(@PathVariable String category,
-                                   Integer level,
-                                   @RequestParam(defaultValue = "8") Integer count) {
-        CategoryLevelEnum levelEnum;
-        if(StringUtils.isBlank(category) || (levelEnum = CategoryLevelEnum.getEnum(level)) == null) {
-            return ResultVOUtils.error(ResultEnum.PARAM_ERROR);
+                                   Integer level, @RequestParam(defaultValue = "8") Integer count) throws CustomException {
+        CategoryLevelEnum levelEnum = CategoryLevelEnum.getEnum(level);
+        if(levelEnum == null) {
+            throw new CustomException(ResultEnum.PARAM_ERROR.getCode(), "目录级别不合法");
         }
 
         return contentService.listHotContent(levelEnum, category, count);

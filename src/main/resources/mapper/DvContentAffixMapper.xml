@@ -6,7 +6,7 @@
         SELECT id FROM `dv_content_affix` WHERE `content_id`=#{contentId}
     </select>
     <select id="getDesc" resultType="java.lang.String">
-        SELECT CONCAT("共包含",GROUP_CONCAT(name SEPARATOR '，'),"等 ",count(*), " 个附件")
+        SELECT CONCAT("共包含",GROUP_CONCAT(name SEPARATOR '，'),"等 ",count(*), " 个内容")
         FROM `dv_content_affix`
         where content_id=#{containerId} limit #{limit};
     </select>

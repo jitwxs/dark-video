@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jit.wxs.dv.mapper.DvContentLookHistoryMapper">
+
+    <select id="selectByContentIdAndUserName" resultType="jit.wxs.dv.domain.entity.DvContentLookHistory">
+        SELECT * FROM `dv_content_look_history`
+        WHERE `content_id`=#{contentId} AND `username`=#{username}
+    </select>
+</mapper>

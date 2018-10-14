@@ -3,6 +3,7 @@ package jit.wxs.dv.service;
 import com.baomidou.mybatisplus.plugins.Page;
 import jit.wxs.dv.domain.entity.ESContent;
 import jit.wxs.dv.domain.vo.ResultVO;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 
 /**
  * @author jitwxs
@@ -29,14 +30,14 @@ public interface ESService {
      * @author jitwxs
      * @since 2018/10/9 23:12
      */
-    ResultVO buildContentIndex();
+    void buildContentIndex(String sessionId);
 
     /**
      * 清空内容索引
      * @author jitwxs
      * @since 2018/10/9 23:25
      */
-    long cleanContentIndex();
+    long cleanContentIndex(BoolQueryBuilder queryBuilder);
 
     /**
      * 搜索内容
@@ -46,4 +47,12 @@ public interface ESService {
      * @since 2018/10/9 23:54
      */
     Page<ESContent> searchContent(String name, int current, int size);
+
+    /**
+     * 判断内容索引中记录是否存在
+     * @param documentId 记录Id
+     * @author jitwxs
+     * @since 2018/10/10 22:38
+     */
+    boolean hasContentDocumentExist(String documentId);
 }

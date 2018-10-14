@@ -20,11 +20,32 @@ public class ContentVO {
 
     private String duration;
 
+    /**
+     * 评论数
+     */
     private Integer commentCount;
 
-    private Integer hot;
+    private Integer click;
 
     private Date createDate;
 
     private String desc;
+
+    /**
+     * 上传者
+     */
+    private String author;
+
+    /**
+     * 是否是稍后再看
+     */
+    private Boolean hasLookAfter;
+    /**
+     * 一级分类
+     */
+    private String firstCategoryName;
+    /**
+     * 二级分类
+     */
+    private String secondCategoryName;
 }

@@ -5,4 +5,7 @@
     <select id="listIds" resultType="java.lang.String">
         SELECT id FROM `dv_category`
     </select>
+    <select id="getName" resultType="java.lang.String">
+        SELECT name FROM `dv_category` WHERE id=#{id}
+    </select>
 </mapper>

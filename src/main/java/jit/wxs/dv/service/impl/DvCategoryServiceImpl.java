@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import jit.wxs.dv.domain.entity.DvCategory;
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
-import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.domain.vo.TreeVO;
 import jit.wxs.dv.mapper.DvCategoryMapper;
 import jit.wxs.dv.mapper.DvContentMapper;
@@ -14,9 +13,12 @@ import jit.wxs.dv.service.DvContentService;
 import jit.wxs.dv.util.FileUtils;
 import jit.wxs.dv.util.ResultVOUtils;
 import jit.wxs.dv.util.StringUtils;
+import jit.wxs.dv.websocket.WebSocketServer;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.Date;
@@ -39,6 +41,8 @@ public class DvCategoryServiceImpl extends ServiceImpl<DvCategoryMapper, DvCateg
     private DvContentMapper contentMapper;
     @Autowired
     private DvContentService contentService;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     @Override
     public List<DvCategory> listCategory(String parentId) {
@@ -81,7 +85,14 @@ public class DvCategoryServiceImpl extends ServiceImpl<DvCategoryMapper, DvCateg
     }
 
     @Override
-    public ResultVO genCategory(String resContent) {
+    public String getName(String id) {
+        return categoryMapper.getName(id);
+    }
+
+    @Async("taskExecutor")
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void genCategory(String resContent, String author, String sessionId) {
         // 1、在开始操作前，清理掉一级目录为Null的内容
         contentMapper.delete(new EntityWrapper<DvContent>().isNull("first_category"));
 
@@ -115,7 +126,7 @@ public class DvCategoryServiceImpl extends ServiceImpl<DvCategoryMapper, DvCateg
                 ids.remove(id);
             }
             // 插入一级目录下的内容
-            contentService.genContent(file.getPath(), url, id, null, false);
+            contentService.genContent(file.getPath(), url, author, id, null, false);
 
             // 3.2 获取所有二级目录
             for(File file1 : FileUtils.listDir(file.getPath())) {
@@ -145,7 +156,7 @@ public class DvCategoryServiceImpl extends ServiceImpl<DvCategoryMapper, DvCateg
                 }
 
                 // 插入二级目录下的内容
-                contentService.genContent(file1.getPath(), url1, id, id1, true);
+                contentService.genContent(file1.getPath(), url1, author, id, id1, true);
             }
 
         }
@@ -159,6 +170,7 @@ public class DvCategoryServiceImpl extends ServiceImpl<DvCategoryMapper, DvCateg
             categoryMapper.deleteById(id);
         }
 
-        return ResultVOUtils.success();
+        String message = "目录与内容生成完毕";
+        webSocketServer.sendMessage(message, sessionId);
     }
 }

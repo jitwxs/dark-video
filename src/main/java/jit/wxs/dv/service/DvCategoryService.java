@@ -4,7 +4,6 @@ package jit.wxs.dv.service;
 import com.baomidou.mybatisplus.service.IService;
 import jit.wxs.dv.domain.entity.DvCategory;
 import jit.wxs.dv.domain.enums.CategoryLevelEnum;
-import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.domain.vo.TreeVO;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public interface DvCategoryService extends IService<DvCategory> {
      * @author jitwxs
      * @since 2018/10/4 2:26
      */
-    ResultVO genCategory(String resContent);
+    void genCategory(String resContent, String author, String sessionId);
 
     /**
      * 获取目录
@@ -47,4 +46,11 @@ public interface DvCategoryService extends IService<DvCategory> {
      * @since 2018/10/4 23:44
      */
     CategoryLevelEnum getLevelEnum(String id);
+
+    /**
+     * 获取分类名
+     * @author jitwxs
+     * @since 2018/10/14 15:56
+     */
+    String getName(String id);
 }

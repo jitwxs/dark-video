@@ -12,23 +12,28 @@ import jit.wxs.dv.domain.enums.CategoryLevelEnum;
 import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.enums.RoleEnum;
 import jit.wxs.dv.domain.vo.ContentVO;
+import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.domain.vo.TreeVO;
-import jit.wxs.dv.schedule.CachePool;
+import jit.wxs.dv.handler.CustomException;
 import jit.wxs.dv.service.*;
-import jit.wxs.dv.util.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +43,7 @@ import java.util.List;
  * @author jitwxs
  * @since 2018/10/7 22:12
  */
+@Validated
 @Controller
 public class PageController {
     @Autowired
@@ -49,7 +55,9 @@ public class PageController {
     @Autowired
     private DvContentCommentService contentCommentService;
     @Autowired
-    private DvUserLookLaterService lookLaterService;
+    private DvContentLookLaterService lookLaterService;
+    @Autowired
+    private DvContentLookHistoryService lookHistoryService;
     @Autowired
     private ESService esService;
     @Autowired
@@ -58,18 +66,86 @@ public class PageController {
     private ContentBOConvert contentBOConvert;
 
     /**
+     * 首页面
+     * @author jitwxs
+     * @since 2018/10/4 1:26
+     */
+    @RequestMapping("/")
+    public String showIndex(ModelMap map) {
+        // 导航数据
+        List<TreeVO> navCategory = categoryService.listNavCategory();
+        map.addAttribute("navCategory", navCategory);
+
+        return "index";
+    }
+
+    /**
+     * 登录页面
+     * @author jitwxs
+     * @since 2018/10/4 23:10
+     */
+    @RequestMapping("/login")
+    public String showLogin() {
+        return "login";
+    }
+
+    /**
+     * 错误信息
+     * @author jitwxs
+     * @since 2018/10/4 23:11
+     */
+    @RequestMapping("/auth/error")
+    public String loginError(HttpServletRequest request, ModelMap map) {
+        String errorMsg;
+        // 如果Spring Security中有异常，输出
+        AuthenticationException exception =
+                (AuthenticationException)request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+        if(exception != null) {
+            errorMsg = exception.toString();
+        } else {
+            // 其次从ERR_MSG中取
+            Object obj = request.getAttribute("ERR_MSG");
+            if(obj instanceof String) {
+                errorMsg = (String)obj;
+            } else if(obj instanceof ResultVO) {
+                errorMsg = ((ResultVO) obj).getMessage();
+            } else if(obj instanceof ResultEnum) {
+                errorMsg = ((ResultEnum) obj).getMessage();
+            } else {
+                errorMsg = ResultEnum.OTHER_ERROR.getMessage();
+            }
+        }
+
+        map.addAttribute("errorMsg", errorMsg);
+        return "error";
+    }
+
+    /**
      * 动态页面
      * @author jitwxs
      * @since 2018/10/7 21:19
      */
-    @RequestMapping("/follow")
+    @GetMapping("/follow")
     public String showFollow(@RequestParam(defaultValue = "1") Integer current,
                              @RequestParam(defaultValue = "10") Integer size,
                              ModelMap map) {
+        String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Page<DvContent> selectPage = contentService.selectPage(new Page<>(current, size, "create_date", false));
         Page<ContentVO> page1 = new Page<>();
         BeanUtils.copyProperties(selectPage, page1);
-        page1.setRecords(contentVOConvert.convert(selectPage.getRecords()));
+
+        List<ContentVO> records1 = new ArrayList<>(selectPage.getSize() + 1);
+        for(DvContent content : selectPage.getRecords()) {
+            ContentVO contentVO = contentVOConvert.convert(content);
+            // 判断是否加入稍后再看
+            if(lookLaterService.hasExist(contentVO.getId(), username)) {
+                contentVO.setHasLookAfter(true);
+            } else {
+                contentVO.setHasLookAfter(false);
+            }
+            records1.add(contentVO);
+        }
+        page1.setRecords(records1);
 
         map.addAttribute("page", page1);
         return "follow";
@@ -80,19 +156,19 @@ public class PageController {
      * @author jitwxs
      * @since 2018/10/7 22:19
      */
-    @RequestMapping("/lookLater")
-    public String showLookLater(@RequestParam(defaultValue = "1") Integer current,
-                             @RequestParam(defaultValue = "10") Integer size,
-                             ModelMap map) {
+    @GetMapping("/later")
+    public String showLater(@RequestParam(defaultValue = "1") Integer current,
+                                @RequestParam(defaultValue = "10") Integer size,
+                                ModelMap map) {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
-        Page<DvUserLookLater> page = lookLaterService.selectPage(
+        Page<DvContentLookLater> page = lookLaterService.selectPage(
                 new Page<>(current, size, "create_date", false),
-                new EntityWrapper<DvUserLookLater>().eq("username", username));
+                new EntityWrapper<DvContentLookLater>().eq("username", username));
 
 
-        List<DvUserLookLater> records = page.getRecords();
-        for(DvUserLookLater lookLater : records) {
+        List<DvContentLookLater> records = page.getRecords();
+        for(DvContentLookLater lookLater : records) {
             DvContent content = contentService.selectById(lookLater.getContentId());
             ContentVO contentVO = contentVOConvert.convert(content);
             lookLater.setContentVO(contentVO);
@@ -100,7 +176,34 @@ public class PageController {
 
 
         map.addAttribute("page", page);
-        return "lookLater";
+        return "later";
+    }
+
+    /**
+     * 播放历史页面
+     * @author jitwxs
+     * @since 2018/10/7 22:19
+     */
+    @GetMapping("/history")
+    public String showHistory(@RequestParam(defaultValue = "1") Integer current,
+                                @RequestParam(defaultValue = "10") Integer size,
+                                ModelMap map) {
+        String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+
+        Page<DvContentLookHistory> page = lookHistoryService.selectPage(
+                new Page<>(current, size, "look_date", false),
+                new EntityWrapper<DvContentLookHistory>().eq("username", username));
+
+
+        List<DvContentLookHistory> records = page.getRecords();
+        for(DvContentLookHistory lookHistory : records) {
+            DvContent content = contentService.selectById(lookHistory.getContentId());
+            ContentVO contentVO = contentVOConvert.convert(content);
+            lookHistory.setContentVO(contentVO);
+        }
+
+        map.addAttribute("page", page);
+        return "history";
     }
 
     /**
@@ -108,17 +211,22 @@ public class PageController {
      * @author jitwxs
      * @since 2018/10/4 1:26
      */
-    @RequestMapping("/manager")
-    public String showManager() {
+    @GetMapping("/manager")
+    public String showManager(HttpSession session) {
+        // session数据
+        session.setAttribute("sessionId", session.getId());
+
         Iterator<? extends GrantedAuthority> iterator = SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator();
         while (iterator.hasNext()) {
             String authority = iterator.next().getAuthority();
             if (RoleEnum.ROLE_USER.getMessage().equals(authority) || RoleEnum.ROLE_VIP.getMessage().equals(authority)) {
                 return "user/manager";
             } else if(RoleEnum.ROLE_ADMIN.getMessage().equals(authority)) {
+
                 return "admin/manager";
             }
         }
+
         return "login";
     }
 
@@ -127,22 +235,17 @@ public class PageController {
      * @author jitwxs
      * @since 2018/10/4 21:23
      */
-    @RequestMapping("/category/{categoryId}")
+    @GetMapping("/category/{categoryId}")
     public String showCategory(@PathVariable String categoryId,
                                @RequestParam(defaultValue = "1") Integer current,
                                @RequestParam(defaultValue = "16") Integer size,
                                @RequestParam(defaultValue = "create_date") String sort,
                                @RequestParam(defaultValue = "true") Boolean isAsc,
-                               ModelMap map, HttpServletRequest request, HttpServletResponse response) {
+                               ModelMap map) throws CustomException {
         DvCategory category = categoryService.selectById(categoryId);
 
-        if(StringUtils.isBlank(categoryId) || category == null) {
-            try {
-                request.setAttribute("ERR_MSG", ResultEnum.CATEGORY_NOT_EXIST);
-                request.getRequestDispatcher("/auth/error").forward(request,response);
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
+        if(category == null) {
+            throw new CustomException(ResultEnum.CATEGORY_NOT_EXIST);
         }
 
         // 获取目录级别
@@ -180,27 +283,19 @@ public class PageController {
      * @author jitwxs
      * @since 2018/10/5 10:42
      */
-    @RequestMapping("/content/{contentId}")
-    public String showContent(@PathVariable String contentId, ModelMap map,
-                              HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping("/content/{contentId}")
+    public String showContent(@PathVariable String contentId, ModelMap map) throws CustomException{
         // 判断合法
-        DvContent content = null;
-        if(StringUtils.isBlank(contentId) || (content = contentService.selectById(contentId)) == null) {
-            try {
-                request.setAttribute("ERR_MSG", ResultEnum.CONTENT_NOT_EXIST);
-                request.getRequestDispatcher("/auth/error").forward(request,response);
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
+        DvContent content = contentService.selectById(contentId);
+        if(content == null) {
+            throw new CustomException(ResultEnum.CONTENT_NOT_EXIST);
         }
 
+        String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         // 记录点击数
-        CachePool cachePool = CachePool.getInstance();
-        if(cachePool.getCacheItem(contentId) != null) {
-            cachePool.putCacheItem(contentId, (int)cachePool.getCacheItem(contentId) + 1);
-        } else {
-            cachePool.putCacheItem(contentId, 1);
-        }
+        contentService.click(contentId, 1);
+        // 记录历史纪录
+        lookHistoryService.addHistory(contentId, username);
 
         map.put("content", contentVOConvert.convert(content));
         map.put("type", content.getType());
@@ -274,10 +369,10 @@ public class PageController {
      * @author jitwxs
      * @since 2018/10/10 0:19
      */
-    @RequestMapping("/content/search")
-    public String search(String keyword, ModelMap map,
-                           @RequestParam(defaultValue = "1") Integer current,
-                           @RequestParam(defaultValue = "10") Integer size) {
+    @GetMapping("/content/search")
+    public String search(@NotBlank(message = "搜索关键字不能为空") String keyword, ModelMap map,
+                         @RequestParam(defaultValue = "1") Integer current,
+                         @RequestParam(defaultValue = "10") Integer size) {
 
         Page<ESContent> page = esService.searchContent(keyword, current, size);
 

@@ -18,7 +18,7 @@
         <!-- 导航项目 -->
         <div class="collapse navbar-collapse navbar-collapse-example">
             <!-- 导航中的表单 -->
-            <form class="navbar-form navbar-left" role="search" action="/content/search" method="post">
+            <form class="navbar-form navbar-left" role="search" action="/content/search" method="get">
                 <div class="form-group">
                     <input type="text" class="form-control" name="keyword" th:value="${keyword}" required>
                 </div>
@@ -31,17 +31,16 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <img src="http://zui.sexy/docs/img/img2.jpg" width="20px" height="20px" class="img-circle" alt="圆形图片">
                         <ul class="dropdown-menu" role="menu">
-                            <li><a href="/self">个人中心</a></li>
-                            <li><a href="/manager">管理中心</a></li>
+                            <li><a href="/manager">设置中心</a></li>
                             <li><a href="/logout">退出登录</a></li>
                         </ul>
                     </a>
                 </li>
                 <li><a href="#">消息</a></li>
                 <li><a href="/follow">动态</a></li>
-                <li><a href="/lookLater">稍后再看</a></li>
+                <li><a href="/later">稍后再看</a></li>
                 <li><a href="#">收藏夹</a></li>
-                <li><a href="#">历史</a></li>
+                <li><a href="/history">历史</a></li>
                 <li><a href="#">投稿</a></li>
             </ul>
         </div>

@@ -4,14 +4,12 @@
     <update id="setThumbnail">
         UPDATE `dv_content` SET `thumbnail`=#{thumbnail} WHERE `id`=#{contentId}
     </update>
-    <update id="updateHot">
-         UPDATE `dv_content` SET `hot`=#{hot} WHERE `id`=#{contentId}
+    <update id="click">
+        UPDATE `dv_content` SET `click`=`click`+#{click} WHERE `id`=#{contentId}
     </update>
-
     <select id="listIdsByFirstCategory" resultType="java.lang.String">
         SELECT id FROM `dv_content` WHERE `first_category` = #{firstCategory}
     </select>
-
     <select id="pageByCategory" resultType="jit.wxs.dv.domain.entity.DvContent">
         SELECT * FROM `dv_content` where
         <if test="column == 'first_category'">

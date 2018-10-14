@@ -16,10 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * <p>
- *  前端控制器
- * </p>
- *
+ * 设置Controller
  * @author jitwxs
  * @since 2018-10-03
  */
@@ -75,7 +72,7 @@ public class SettingController {
      */
     @PostMapping("/carousel")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResultVO setCarouselInfo( String json) {
+    public ResultVO setCarouselInfo(String json) {
         return sysSettingService.setCarouselInfo(json);
     }
 

@@ -5,9 +5,15 @@ import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.service.ESService;
 import jit.wxs.dv.util.ResultVOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
 
 /**
+ * ElasticSearch Controller
  * @author jitwxs
  * @since 2018/10/9 22:35
  */
@@ -40,13 +46,15 @@ public class ESController {
     }
 
     /**
-     * 生成内容索引
+     * 【WebSocket】生成内容索引
      * @author jitwxs
      * @since 2018/10/9 23:44
      */
     @PostMapping("/content/build")
-    public ResultVO buildContentIndex() {
-        return esService.buildContentIndex();
+    public ResultVO buildContentIndex(HttpSession session) {
+        esService.buildContentIndex(session.getId());
+
+        return ResultVOUtils.successWithMsg("开始生成内容索引");
     }
 }
 

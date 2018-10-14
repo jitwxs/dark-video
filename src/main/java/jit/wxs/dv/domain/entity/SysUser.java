@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @since 2018-10-04
  */
 @Data
-public class SysLogin implements Serializable {
+public class SysUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

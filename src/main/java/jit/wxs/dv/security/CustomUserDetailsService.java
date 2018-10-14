@@ -1,9 +1,9 @@
 package jit.wxs.dv.security;
 
 
-import jit.wxs.dv.domain.entity.SysLogin;
+import jit.wxs.dv.domain.entity.SysUser;
 import jit.wxs.dv.domain.enums.RoleEnum;
-import jit.wxs.dv.service.SysLoginService;
+import jit.wxs.dv.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,20 +23,20 @@ import java.util.Collection;
 @Service("userDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
-    private SysLoginService loginService;
+    private SysUserService loginService;
 
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
-        SysLogin sysLogin = loginService.selectById(s);
+        SysUser sysUser = loginService.selectById(s);
 
         // 判断用户是否合法
-        if(sysLogin == null) {
+        if(sysUser == null) {
             throw new UsernameNotFoundException("用户名不存在");
         }
 
-        RoleEnum roleEnum = RoleEnum.getEnum(sysLogin.getRoleId());
+        RoleEnum roleEnum = RoleEnum.getEnum(sysUser.getRoleId());
         if(roleEnum == null) {
             throw new UsernameNotFoundException("用户权限错误");
         }
@@ -44,6 +44,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority(roleEnum.getMessage()));
 
         // 返回UserDetails实现类
-        return new User(sysLogin.getUsername(), sysLogin.getPassword(), authorities);
+        return new User(sysUser.getUsername(), sysUser.getPassword(), authorities);
     }
 }

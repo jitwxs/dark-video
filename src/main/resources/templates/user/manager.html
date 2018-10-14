@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>管理中心 - Dark Video</title>
+    <title>设置中心 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
 </head>
 <body>
@@ -12,7 +12,28 @@
 <nav th:replace="common/nav::html"></nav>
 
 <div class="container">
-    <h1>User</h1>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#password_tab" aria-controls="password_carousel" role="tab" data-toggle="tab">密码设置</a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="password_tab">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">原始密码</span>
+                        <input type="password" id="inputRawPassword" class="form-control">
+                    </div><br>
+                    <div class="input-group">
+                        <span class="input-group-addon">新密码</span>
+                        <input type="password" id="inputNewPassword" class="form-control">
+                    </div><br>
+                    <button class="btn btn-primary" type="button" onclick="resetPassword()">重置密码</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script th:src="@{/assets/js/jquery.js}"></script>
@@ -20,7 +41,37 @@
 <script th:src="@{/assets/layer/layer.js}"></script>
 <script th:src="@{/assets/zui/js/zui.min.js}"></script>
 <script>
+    // 重置密码
+    function resetPassword() {
+        let rawPassword = $("#inputRawPassword").val();
+        let newPassword = $("#inputNewPassword").val();
 
+        if(rawPassword == null || rawPassword == '' ||
+            newPassword == null || newPassword == '') {
+            layer.msg("原始密码或新密码", {icon: 2});
+            return false;
+        }
+
+        let data = {
+            rawPassword:rawPassword,
+            newPassword:newPassword
+        };
+
+        sendJson("post", "/user/password", data, false, function (res) {
+                if (res.code === 0) {
+                    layer.msg("修改成功，即将退出登录", {icon: 1});
+                    setTimeout(function () {
+                        window.location.href='/logout';
+                    }, 2000);
+
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
+    }
 </script>
 </body>
 </html>

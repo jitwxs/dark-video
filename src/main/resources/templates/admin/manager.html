@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>管理中心 - Dark Video</title>
+    <title>设置中心 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
     <link th:href="@{/assets/css/common.css}" rel="stylesheet">
 </head>
@@ -17,6 +17,7 @@
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active"><a href="#res_tab" aria-controls="res_setting" role="tab" data-toggle="tab">资源设置</a></li>
         <li role="presentation"><a href="#carousel_tab" aria-controls="index_carousel" role="tab" data-toggle="tab">轮播图设置</a></li>
+        <li role="presentation"><a href="#password_tab" aria-controls="password_carousel" role="tab" data-toggle="tab">密码设置</a></li>
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
@@ -64,6 +65,21 @@
                 </div>
             </div>
         </div>
+        <div role="tabpanel" class="tab-pane fade in" id="password_tab">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="input-group">
+                        <span class="input-group-addon">原始密码</span>
+                        <input type="password" id="inputRawPassword" class="form-control">
+                    </div><br>
+                    <div class="input-group">
+                        <span class="input-group-addon">新密码</span>
+                        <input type="password" id="inputNewPassword" class="form-control">
+                    </div><br>
+                    <button class="btn btn-primary" type="button" onclick="resetPassword()">重置密码</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -71,7 +87,15 @@
 <script th:src="@{/assets/js/http.js}"></script>
 <script th:src="@{/assets/layer/layer.js}"></script>
 <script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<script th:inline = "javascript" >
+    /*<![CDATA[*/
+    var sessionId = [[${session.sessionId}]];
+    /*]]>*/
+</script>
 <script>
+    var ws = null, wsUrl = "ws://127.0.0.1:8707/ws/" + sessionId;
+    var lockReconnect = false;  //避免ws重复连接
+
     $(function () {
         // 读取资源信息
         sendJson("get", "/setting/res", null, false, function (res) {
@@ -137,16 +161,19 @@
             function () {
                 layer.msg("未知错误", {icon: 2});
             });
+
+        // 连接WebSocket
+        createWebSocket(wsUrl);
     });
 
     // 生成内容索引
     function buildContentIndex() {
-        layer.confirm('此操作将会清空现有索引并重新建立，耗费一定时间，是否生成？', {
+        layer.confirm('生成索引将耗费一定时间，是否生成？', {
             btn: ['确定','取消']
         }, function(){
             sendJson("post", "/es/content/build", null, false, function (res) {
                     if (res.code === 0) {
-                        layer.msg("生成索引成功，共生成：" + res.data + " 条", {icon: 1});
+                        layer.msg(res.message, {icon: 1});
                     } else {
                         layer.msg(res.message, {icon: 2});
                     }
@@ -192,19 +219,17 @@
             });
     }
 
-    // 清理缩略图
+    // 清理缩略图 WebSocket
     function cleanThumbnail() {
         layer.confirm("清理缩略图将耗费一定时间，确定清理？", {
             btn: ['确定', '取消']
         }, function () {
-            let index = layer.load();
             sendJson("delete", "thumbnail/clean", null, false, function (res) {
                 if (res.code !== 0) {
                     layer.msg(res.message, {icon: 2});
                 } else {
-                    layer.msg("清理完成，共清理：" + res.data + " 个", {icon: 1});
+                    layer.msg(res.message, {icon: 1});
                 }
-                layer.close(index);
             }, function () {
                 layer.msg("未知错误", {icon: 2});
             });
@@ -212,24 +237,54 @@
         });
     }
 
-    // 生成目录
+    // 生成目录 WebSocket
     function genDirectory() {
         layer.confirm("重新生成耗时较长确定要重新生成目录吗？", {
             btn: ['确定', '取消']
         }, function () {
-            let index = layer.load();
             sendJson("post", "/category/gen", null, false, function (res) {
                 if (res.code !== 0) {
                     layer.msg(res.message, {icon: 2});
                 } else {
-                    layer.msg("生成成功", {icon: 1});
+                    layer.msg(res.message, {icon: 1});
                 }
-                layer.close(index);
             }, function () {
                 layer.msg("未知错误", {icon: 2});
             });
         }, function () {
         });
+    }
+
+    // 重置密码
+    function resetPassword() {
+        let rawPassword = $("#inputRawPassword").val();
+        let newPassword = $("#inputNewPassword").val();
+
+        if(rawPassword == null || rawPassword == '' ||
+            newPassword == null || newPassword == '') {
+            layer.msg("原始密码或新密码", {icon: 2});
+            return false;
+        }
+
+        let data = {
+            rawPassword:rawPassword,
+            newPassword:newPassword
+        };
+
+        sendJson("post", "/user/password", data, false, function (res) {
+                if (res.code === 0) {
+                    layer.msg("修改成功，即将退出登录", {icon: 1});
+                    setTimeout(function () {
+                        window.location.href='/logout';
+                    }, 2000);
+
+                } else {
+                    layer.msg(res.message, {icon: 2});
+                }
+            },
+            function () {
+                layer.msg("未知错误", {icon: 2});
+            });
     }
 
     function addCarousel() {
@@ -273,6 +328,103 @@
                 layer.msg("未知错误", {icon: 2});
             });
         }
+    }
+
+    <!-- WebSocket 相关 -->
+    // 建立连接
+    function createWebSocket(url) {
+        if ('WebSocket' in window) {
+            ws = new WebSocket(url);
+        } else if ('MozWebSocket' in window) {
+            ws = new MozWebSocket(url);
+        } else {
+            layer.msg('您的浏览器不支持WebSocket，请更换浏览器', {icon: 2});
+        }
+        initEventHandle();
+    }
+
+    // 初始化相关回调函数
+    function initEventHandle() {
+        //连接成功建立的回调方法
+        ws.onopen = function(){
+            console.log("WebSocket connect.");
+            //心跳检测重置
+            heartCheck.reset().start();
+        };
+
+        //接收到消息的回调方法
+        ws.onmessage = function(event){
+            //拿到任何消息都说明当前连接是正常的，重置心跳
+            heartCheck.reset().start();
+
+            // 处理服务端消息
+            if(event.data !== "pong") {
+                new $.zui.Messager(event.data, {type: 'info', time:6000}).show();
+            } else {
+                console.log("WebSocket rec: pong");
+            }
+        };
+
+        //连接关闭的回调方法
+        ws.onclose = function(){
+            console.log("WebSocket close.");
+            // 重连WebSocket
+            reconnect(wsUrl);
+        };
+
+        //连接发生错误的回调方法
+        ws.onerror = function(){
+            console.log("WebSocket error.");
+            // 重连WebSocket
+            reconnect(wsUrl);
+        };
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭webSocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function(){
+        ws.close();
+    };
+
+    // 重连WebSocket
+    function reconnect(url) {
+        if (lockReconnect)
+            return;
+        lockReconnect = true;
+
+        //没连接上会一直重连，设置延迟避免请求过多
+        setTimeout(function () {
+            createWebSocket(url);
+            lockReconnect = false;
+        }, 2000);
+    }
+
+
+    //心跳检测
+    var heartCheck = {
+        timeout: 10000,        // 10s发一次心跳
+        timeoutObj: null,
+        serverTimeoutObj: null,
+        reset: function () { //心跳包重置
+            clearTimeout(this.timeoutObj);
+            clearTimeout(this.serverTimeoutObj);
+            return this;
+        },
+        start: function () {
+            var self = this;
+            this.timeoutObj = setTimeout(function () {
+                // 向后台发送心跳
+                ws.send("ping");
+                self.serverTimeoutObj = setTimeout(function () { //如果超过一定时间还没重置，说明后端主动断开了
+                    // 执行ws.close()会回调onclose，然后执行其中的reconnet。如果直接执行reconnect 会触发onclose导致重连两次
+                    ws.close();
+                }, self.timeout)
+            }, this.timeout)
+        }
+    };
+
+    //关闭连接
+    function closeWebSocket(){
+        ws.close();
     }
 </script>
 </body>

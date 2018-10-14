@@ -3,6 +3,7 @@ package jit.wxs.dv.domain.entity;
 import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableId;
 import com.baomidou.mybatisplus.enums.IdType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jit.wxs.dv.domain.vo.ContentVO;
 import lombok.Data;
 
@@ -11,20 +12,17 @@ import java.util.Date;
 
 /**
  * <p>
- * 稍后再看表
+ * 观看历史表
  * </p>
  *
  * @author jitwxs
- * @since 2018-10-07
+ * @since 2018-10-14
  */
 @Data
-public class DvUserLookLater implements Serializable {
+public class DvContentLookHistory implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 字符串ID
-     */
     @TableId(type = IdType.UUID)
     private String id;
     /**
@@ -35,15 +33,18 @@ public class DvUserLookLater implements Serializable {
      * 内容ID
      */
     private String contentId;
-
-    private Date createDate;
+    /**
+     * 观看时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date lookDate;
 
     @TableField(exist = false)
     private ContentVO contentVO;
 
-    public DvUserLookLater(String username, String contentId) {
+    public DvContentLookHistory(String username, String contentId) {
         this.username = username;
         this.contentId = contentId;
-        this.createDate = new Date();
+        this.lookDate = new Date();
     }
 }

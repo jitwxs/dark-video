@@ -25,7 +25,7 @@ public interface DvContentService extends IService<DvContent> {
      * @author jitwxs
      * @since 2018/10/4 2:42
      */
-    void genContent(String path, String url, String firstCategory, String secondCategory, boolean hasSecondCategory);
+    void genContent(String path, String url, String author, String firstCategory, String secondCategory, boolean hasSecondCategory);
 
     /**
      * 获取指定目录下最新内容
@@ -63,12 +63,12 @@ public interface DvContentService extends IService<DvContent> {
     List<ContentVO> listRecommend(DvContent content, int count);
 
     /**
-     * 设置热度值
+     * 设置点击量
      * @param click 新增点击量
      * @author jitwxs
      * @since 2018/10/7 17:17
      */
-    void setHot(String contentId, Integer click);
+    void click(String contentId, Integer click);
 
     List<DvContent> listAll();
 }

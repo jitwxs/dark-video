@@ -25,12 +25,13 @@ public enum ResultEnum {
     COMMENT_TOO_LONG("评论内容长度不得超过255个字符", 18),
     INDEX_CAROUSEL_NULL("首页轮播图数据为空", 19),
     ADD_LOOK_LATER_ERROR("添加稍后再看失败", 20),
-    LOOK_LATER_ALERADY("已经被添加，请不要重复添加", 21),
+    LOOK_LATER_ALREADY("已经被添加，请不要重复添加", 21),
     DELETE_RECORD_ERROR("删除记录失败", 22),
     CONTENT_INDEX_NOT_EXIST("内容索引不存在", 23),
     CONTENT_INDEX_HAS_EXIST("内容索引已经存在", 24),
     CONTENT_INDEX_CREATE_ERROR("内容索引初始化失败", 25),
     CONTENT_SEARCH_ERROR("内容查询失败", 26),
+    RAW_PASSWORD_ERROR("原始密码错误", 27),
     PARAM_ERROR("参数错误", 100);
 
     private String message;

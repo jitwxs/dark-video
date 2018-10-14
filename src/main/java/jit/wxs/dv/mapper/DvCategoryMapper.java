@@ -20,4 +20,11 @@ public interface DvCategoryMapper extends BaseMapper<DvCategory> {
      * @since 2018/10/4 2:34
      */
     List<String> listIds();
+
+    /**
+     * 获取分类名
+     * @author jitwxs
+     * @since 2018/10/14 15:57
+     */
+    String getName(String id);
 }

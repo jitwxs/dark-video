@@ -38,5 +38,10 @@ public interface DvContentMapper extends BaseMapper<DvContent> {
 
     void setThumbnail(@Param("thumbnail") String thumbnail, @Param("contentId") String contentId);
 
-    void updateHot(@Param("hot") Integer hot,@Param("contentId") String contentId);
+    /**
+     * 设置点击量
+     * @author jitwxs
+     * @since 2018/10/14 17:58
+     */
+    void click(@Param("contentId") String contentId,@Param("click")  Integer click);
 }

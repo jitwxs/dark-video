@@ -1,13 +1,15 @@
 package jit.wxs.dv.service.impl;
 
-import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.mapper.DvContentMapper;
 import jit.wxs.dv.service.SysSettingService;
 import jit.wxs.dv.service.ThumbnailService;
 import jit.wxs.dv.util.FileUtils;
 import jit.wxs.dv.util.ResultVOUtils;
+import jit.wxs.dv.websocket.WebSocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.Collection;
@@ -22,6 +24,8 @@ public class ThumbnailServiceImpl implements ThumbnailService {
     private DvContentMapper contentMapper;
     @Autowired
     private SysSettingService settingService;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
 
     /**
@@ -29,8 +33,10 @@ public class ThumbnailServiceImpl implements ThumbnailService {
      * @author jitwxs
      * @since 2018/10/4 2:20
      */
+    @Async("taskExecutor")
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultVO cleanThumbnail() {
+    public void cleanThumbnailTask(String sessionId) {
         String resThumbnail = settingService.getResThumbnail();
 
         // 递归查找缩略图根目录下所有jpg文件
@@ -45,7 +51,9 @@ public class ThumbnailServiceImpl implements ThumbnailService {
                 count++;
             }
         }
-        return ResultVOUtils.success(count);
+
+        String message = "清理完成，共清理缩略图：" + count + " 个";
+        webSocketServer.sendMessage(message, sessionId);
     }
 
     @Override

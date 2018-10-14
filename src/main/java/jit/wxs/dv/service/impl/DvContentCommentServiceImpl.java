@@ -4,13 +4,13 @@ package jit.wxs.dv.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import jit.wxs.dv.domain.entity.DvContentComment;
-import jit.wxs.dv.domain.entity.SysLogin;
+import jit.wxs.dv.domain.entity.SysUser;
 import jit.wxs.dv.domain.enums.ResultEnum;
 import jit.wxs.dv.domain.enums.RoleEnum;
 import jit.wxs.dv.domain.vo.ResultVO;
 import jit.wxs.dv.mapper.DvContentCommentMapper;
 import jit.wxs.dv.mapper.DvContentMapper;
-import jit.wxs.dv.mapper.SysLoginMapper;
+import jit.wxs.dv.mapper.SysUserMapper;
 import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.util.ResultVOUtils;
 import jit.wxs.dv.util.StringUtils;
@@ -34,7 +34,7 @@ public class DvContentCommentServiceImpl extends ServiceImpl<DvContentCommentMap
     @Autowired
     private DvContentMapper contentMapper;
     @Autowired
-    private SysLoginMapper loginMapper;
+    private SysUserMapper loginMapper;
 
     @Override
     public int countByContentId(String contentId) {
@@ -82,9 +82,9 @@ public class DvContentCommentServiceImpl extends ServiceImpl<DvContentCommentMap
     }
 
     public boolean hasPermission(String id, String username) {
-        SysLogin sysLogin = loginMapper.selectById(username);
+        SysUser sysUser = loginMapper.selectById(username);
 
-        RoleEnum roleEnum = RoleEnum.getEnum(sysLogin.getRoleId());
+        RoleEnum roleEnum = RoleEnum.getEnum(sysUser.getRoleId());
         if(roleEnum == null) {
             return false;
         }

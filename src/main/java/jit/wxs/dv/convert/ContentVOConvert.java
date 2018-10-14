@@ -2,6 +2,8 @@ package jit.wxs.dv.convert;
 
 import jit.wxs.dv.domain.entity.DvContent;
 import jit.wxs.dv.domain.vo.ContentVO;
+import jit.wxs.dv.mapper.DvCategoryMapper;
+import jit.wxs.dv.service.DvCategoryService;
 import jit.wxs.dv.service.DvContentAffixService;
 import jit.wxs.dv.service.DvContentCommentService;
 import jit.wxs.dv.service.ThumbnailService;
@@ -19,7 +21,8 @@ import java.util.List;
  */
 @Component
 public class ContentVOConvert {
-
+    @Autowired
+    private DvCategoryMapper categoryMapper;
     @Autowired
     private ThumbnailService thumbnailService;
     @Autowired
@@ -28,6 +31,10 @@ public class ContentVOConvert {
     private DvContentAffixService contentAffixService;
 
     public ContentVO convert(DvContent content) {
+        if(content == null) {
+            return null;
+        }
+
         ContentVO contentVO = new ContentVO();
         BeanUtils.copyProperties(content, contentVO);
 
@@ -44,13 +51,21 @@ public class ContentVOConvert {
         contentVO.setCommentCount(contentCommentService.countByContentId(content.getId()));
 
         // 设置描述
-        String desc = "";
+        String desc;
         if("dir".equals(content.getType())) {
             desc = contentAffixService.getDesc(content.getId(), 5);
         } else {
             desc = "共包含1个内容";
         }
         contentVO.setDesc(desc);
+
+        // 设置分类名
+        if(StringUtils.isNotBlank(content.getFirstCategory())) {
+            contentVO.setFirstCategoryName(categoryMapper.getName(content.getFirstCategory()));
+        }
+        if(StringUtils.isNotBlank(content.getSecondCategory())) {
+            contentVO.setSecondCategoryName(categoryMapper.getName(content.getSecondCategory()));
+        }
 
         return contentVO;
     }

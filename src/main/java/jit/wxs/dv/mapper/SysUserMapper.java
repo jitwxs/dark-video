@@ -1,7 +1,7 @@
 package jit.wxs.dv.mapper;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import jit.wxs.dv.domain.entity.SysLogin;
+import jit.wxs.dv.domain.entity.SysUser;
 
 /**
  * <p>
@@ -11,7 +11,7 @@ import jit.wxs.dv.domain.entity.SysLogin;
  * @author jitwxs
  * @since 2018-10-04
  */
-public interface SysLoginMapper extends BaseMapper<SysLogin> {
+public interface SysUserMapper extends BaseMapper<SysUser> {
     /**
      * 统计用户数
      * @author jitwxs

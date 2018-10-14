@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>动态 - Dark Video</title>
+    <title>播放历史 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
     <link th:href="@{/assets/css/common.css}" rel="stylesheet">
 </head>
@@ -15,31 +15,33 @@
 <div class="container">
     <div class="list list-condensed">
         <header>
-            <h3><i class="icon-list-ul"></i> 最新动态</h3>
+            <h3><i class="icon-list-ul"></i> 播放历史</h3>
         </header>
-        <div class="items items-hover" th:each="content: ${page.records}">
+        <div class="items items-hover" th:each="history: ${page.records}">
             <div class="item">
                 <div class="item-heading">
-                    <div class="pull-right label label-success" th:text="${content.type}">维基</div>
-                    <h4><a target="_blank" th:href="'/content/'+${content.id}" th:text="${content.name}"></a></h4>
+                    <div class="pull-right label label-success" th:text="${history.contentVO.type}">维基</div>
+                    <h4><a target="_blank" th:href="'/content/'+${history.contentVO.id}" th:text="${history.contentVO.name}"></a></h4>
                 </div>
                 <div class="item-content">
-                    <div class="media pull-right"><img th:src="${content.thumbnail}"></div>
-                    <div class="text" th:text="${content.desc}"></div>
+                    <div class="media pull-right"><img th:src="${history.contentVO.thumbnail}"></div>
+                    <div class="text" th:text="${history.contentVO.desc}">
+                    </div>
                 </div>
                 <div class="item-footer">
-                    <a href="#" class="text-muted"><i class="icon-user" th:text="${' '+content.author}"></i></a> &nbsp;
-                    <a href="#" class="text-muted"><i class="icon-comments" th:text="${' '+content.commentCount}"></i></a> &nbsp;
-                    <span class="text-muted" th:text="${#dates.format(content.createDate, 'yyyy-MM-dd HH:mm:ss')}"></span> &nbsp;&nbsp;
-                    <span class="text-muted" th:if="${content.firstCategoryName}" th:text="${'| ' + content.firstCategoryName}"></span>
-                    <span class="text-muted" th:if="${content.secondCategoryName}" th:text="${'| ' + content.secondCategoryName}"></span> &nbsp;
-                    <button class="btn ml32" th:if="${!content.hasLookAfter}" th:onclick="${'lookLater(&quot;'+content.id+'&quot;)'}">稍后再看</button>
+                    <a href="#" class="text-muted"><i class="icon-user" th:text="${' '+history.contentVO.author}"></i></a> &nbsp;
+                    <a href="#" class="text-muted"><i class="icon-comments" th:text="${' '+history.contentVO.commentCount}"></i></a> &nbsp;
+                    <span class="text-muted" th:text="${#dates.format(history.lookDate, 'yyyy-MM-dd HH:mm:ss')}"></span> &nbsp;&nbsp;
+                    <span class="text-muted" th:if="${history.contentVO.firstCategoryName}" th:text="${'| ' + history.contentVO.firstCategoryName}"></span>
+                    <span class="text-muted" th:if="${history.contentVO.secondCategoryName}" th:text="${'| ' + history.contentVO.secondCategoryName}"></span> &nbsp;
+                    <button class="btn ml32" th:onclick="${'removeHistory(&quot;'+history.id+'&quot;)'}">删除记录</button>
                 </div>
             </div>
         </div>
         <footer>
             <!-- 分页器 -->
             <ul id="myPager" class="pager" data-ride="pager" data-elements=["first","prev","nav","last","next","goto"]
+                th:if="${page.total} > 0"
                 th:attr="data-page=${page.current}, data-rec-total=${page.total}, data-rec-per-page=${page.size}"></ul>
         </footer>
     </div>
@@ -57,10 +59,10 @@
         }
     });
 
-    function lookLater(id) {
-        sendJson("post", "/content/later", {contentId:id}, false, function (res) {
+    function removeHistory(id) {
+        sendJson("delete", "/content/history/" + id, null, false, function (res) {
                 if (res.code === 0) {
-                    layer.msg("已添加到稍后再看。", {icon: 1});
+                    layer.msg("记录已删除。", {icon: 1});
                 } else {
                     layer.msg(res.message, {icon: 2});
                 }
