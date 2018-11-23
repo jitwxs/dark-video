@@ -23,12 +23,6 @@
 <!-- 头部 -->
 <nav th:replace="common/nav::html"></nav>
 
-<div class="alert alert-success alert-dismissable">
-    <div class="content" id="dataAlert" style="text-align: center;">
-    </div>
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-</div>
-
 <div class="container">
     <!-- 类别导航 -->
     <nav th:replace="common/category_nav::html"></nav>
@@ -70,18 +64,6 @@
                         array.push({"img":json[i].link,"url":json[i].url});
                     }
                     new posterTvGrid('posterTvGrid',{className: "posterTvGrid"}, array);
-                } else {
-                    layer.msg(res.message, {icon: 2});
-                }
-            },
-            function () {
-                layer.msg("未知错误", {icon: 2});
-            });
-
-        // 读取视频和图片数
-        sendJson("get", "/setting/vpn", null, false, function (res) {
-                if (res.code === 0) {
-                    $("#dataAlert").text("全站视频数：" + res.data.vN + "，图片数：" + res.data.pN);
                 } else {
                     layer.msg(res.message, {icon: 2});
                 }

@@ -2,6 +2,10 @@ package jit.wxs.dv.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import jit.wxs.dv.convert.ContentBOConvert;
 import jit.wxs.dv.convert.ContentVOConvert;
 import jit.wxs.dv.domain.bo.ContentBO;
@@ -25,10 +29,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -43,6 +45,7 @@ import java.util.List;
  * @author jitwxs
  * @since 2018/10/7 22:12
  */
+@Api(tags = {"页面管理"})
 @Validated
 @Controller
 public class PageController {
@@ -65,13 +68,9 @@ public class PageController {
     @Autowired
     private ContentBOConvert contentBOConvert;
 
-    /**
-     * 首页面
-     * @author jitwxs
-     * @since 2018/10/4 1:26
-     */
-    @RequestMapping("/")
-    public String showIndex(ModelMap map) {
+    @ApiOperation(value= "首页面")
+    @GetMapping(value = "/")
+    public String showIndex(@ApiIgnore ModelMap map) {
         // 导航数据
         List<TreeVO> navCategory = categoryService.listNavCategory();
         map.addAttribute("navCategory", navCategory);
@@ -79,23 +78,15 @@ public class PageController {
         return "index";
     }
 
-    /**
-     * 登录页面
-     * @author jitwxs
-     * @since 2018/10/4 23:10
-     */
-    @RequestMapping("/login")
+    @ApiOperation(value= "登录页面")
+    @GetMapping(value = "/login")
     public String showLogin() {
         return "login";
     }
 
-    /**
-     * 错误信息
-     * @author jitwxs
-     * @since 2018/10/4 23:11
-     */
-    @RequestMapping("/auth/error")
-    public String loginError(HttpServletRequest request, ModelMap map) {
+    @ApiOperation(value= "错误信息")
+    @GetMapping(value = "/auth/error")
+    public String loginError(@ApiIgnore HttpServletRequest request, @ApiIgnore ModelMap map) {
         String errorMsg;
         // 如果Spring Security中有异常，输出
         AuthenticationException exception =
@@ -120,15 +111,15 @@ public class PageController {
         return "error";
     }
 
-    /**
-     * 动态页面
-     * @author jitwxs
-     * @since 2018/10/7 21:19
-     */
+    @ApiOperation(value= "动态页面")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="current", value="当前页，默认为1"),
+            @ApiImplicitParam(paramType = "query", name="size", value="页面容量，默认为10")
+    })
     @GetMapping("/follow")
     public String showFollow(@RequestParam(defaultValue = "1") Integer current,
                              @RequestParam(defaultValue = "10") Integer size,
-                             ModelMap map) {
+                             @ApiIgnore ModelMap map) {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Page<DvContent> selectPage = contentService.selectPage(new Page<>(current, size, "create_date", false));
         Page<ContentVO> page1 = new Page<>();
@@ -151,15 +142,15 @@ public class PageController {
         return "follow";
     }
 
-    /**
-     * 稍后再看页面
-     * @author jitwxs
-     * @since 2018/10/7 22:19
-     */
+    @ApiOperation(value= "稍后再看页面")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="current", value="当前页，默认为1"),
+            @ApiImplicitParam(paramType = "query", name="size", value="页面容量，默认为10")
+    })
     @GetMapping("/later")
     public String showLater(@RequestParam(defaultValue = "1") Integer current,
                                 @RequestParam(defaultValue = "10") Integer size,
-                                ModelMap map) {
+                                @ApiIgnore ModelMap map) {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
         Page<DvContentLookLater> page = lookLaterService.selectPage(
@@ -179,15 +170,15 @@ public class PageController {
         return "later";
     }
 
-    /**
-     * 播放历史页面
-     * @author jitwxs
-     * @since 2018/10/7 22:19
-     */
+    @ApiOperation(value= "播放历史页面")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="current", value="当前页，默认为1"),
+            @ApiImplicitParam(paramType = "query", name="size", value="页面容量，默认为10")
+    })
     @GetMapping("/history")
     public String showHistory(@RequestParam(defaultValue = "1") Integer current,
                                 @RequestParam(defaultValue = "10") Integer size,
-                                ModelMap map) {
+                                @ApiIgnore ModelMap map) {
         String username = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
         Page<DvContentLookHistory> page = lookHistoryService.selectPage(
@@ -206,14 +197,9 @@ public class PageController {
         return "history";
     }
 
-    /**
-     * 管理中心页面
-     * @author jitwxs
-     * @since 2018/10/4 1:26
-     */
+    @ApiOperation(value= "管理中心页面")
     @GetMapping("/manager")
-    public String showManager(HttpSession session) {
-        // session数据
+    public String showManager(@ApiIgnore HttpSession session) {
         session.setAttribute("sessionId", session.getId());
 
         Iterator<? extends GrantedAuthority> iterator = SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator();
@@ -230,18 +216,20 @@ public class PageController {
         return "login";
     }
 
-    /**
-     * 类别页面
-     * @author jitwxs
-     * @since 2018/10/4 21:23
-     */
+    @ApiOperation(value= "类别页面")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="current", value="当前页，默认为1"),
+            @ApiImplicitParam(paramType = "query", name="size", value="页面容量，默认为16"),
+            @ApiImplicitParam(paramType = "query", name="sort", value="排序字段，默认为创建时间"),
+            @ApiImplicitParam(paramType = "query", name="isAsc", value="排序方式true/false，默认为true升序")
+    })
     @GetMapping("/category/{categoryId}")
     public String showCategory(@PathVariable String categoryId,
                                @RequestParam(defaultValue = "1") Integer current,
                                @RequestParam(defaultValue = "16") Integer size,
                                @RequestParam(defaultValue = "create_date") String sort,
                                @RequestParam(defaultValue = "true") Boolean isAsc,
-                               ModelMap map) throws CustomException {
+                               @ApiIgnore ModelMap map) throws CustomException {
         DvCategory category = categoryService.selectById(categoryId);
 
         if(category == null) {
@@ -278,13 +266,10 @@ public class PageController {
         return "category";
     }
 
-    /**
-     * 内容页面
-     * @author jitwxs
-     * @since 2018/10/5 10:42
-     */
+    @ApiOperation(value= "内容页面")
+    @ApiImplicitParam(paramType = "path", name="contentId", value="内容ID", required = true)
     @GetMapping("/content/{contentId}")
-    public String showContent(@PathVariable String contentId, ModelMap map) throws CustomException{
+    public String showContent(@PathVariable String contentId, @ApiIgnore ModelMap map) throws CustomException{
         // 判断合法
         DvContent content = contentService.selectById(contentId);
         if(content == null) {
@@ -364,13 +349,14 @@ public class PageController {
         return "content";
     }
 
-    /**
-     * 搜索内容
-     * @author jitwxs
-     * @since 2018/10/10 0:19
-     */
+    @ApiOperation(value= "搜索页面")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name="keyword", value="搜索关键字", required = true),
+            @ApiImplicitParam(paramType = "query", name="current", value="当前页，默认为1"),
+            @ApiImplicitParam(paramType = "query", name="size", value="页面容量，默认为10")
+    })
     @GetMapping("/content/search")
-    public String search(@NotBlank(message = "搜索关键字不能为空") String keyword, ModelMap map,
+    public String search(@NotBlank(message = "搜索关键字不能为空") String keyword, @ApiIgnore ModelMap map,
                          @RequestParam(defaultValue = "1") Integer current,
                          @RequestParam(defaultValue = "10") Integer size) {
 

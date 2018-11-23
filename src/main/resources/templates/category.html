@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="zh-cn" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
@@ -36,7 +35,7 @@
                     <div class="caption" th:if="${content.type=='video'}" th:text="${content.duration}"></div>
                     <div class="card-heading"><strong th:text="${content.name}"></strong></div>
                     <div class="card-actions">
-                        <div class="pull-left"><i class="certificate" th:text="${content.hot} +' °C'"></i></div>
+                        <div class="pull-left"><i class="icon-hand-up" th:text="${content.click}"></i></div>
                         <div class="pull-right"><i class="icon-comments-alt" th:text="${content.commentCount}"></i></div>
                     </div>
                 </a>

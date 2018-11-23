@@ -32,7 +32,7 @@ public interface SysSettingService extends IService<SysSetting> {
      * @author jitwxs
      * @since 2018/10/4 1:41
      */
-    ResultVO getResInfo();
+    ResultVO<Map> getResInfo();
 
     /**
      * 获取视频和图片数目

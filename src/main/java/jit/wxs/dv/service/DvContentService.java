@@ -34,7 +34,7 @@ public interface DvContentService extends IService<DvContent> {
      * @author jitwxs
      * @since 2018/10/4 15:00
      */
-    ResultVO listLatestContent(CategoryLevelEnum levelEnum, String category, int count);
+    ResultVO<List<ContentVO>> listLatestContent(CategoryLevelEnum levelEnum, String category, int count);
 
     /**
      * 获取指定目录下最热内容
@@ -43,7 +43,7 @@ public interface DvContentService extends IService<DvContent> {
      * @author jitwxs
      * @since 2018/10/4 15:00
      */
-    ResultVO listHotContent(CategoryLevelEnum levelEnum, String category, int count);
+    ResultVO<List<ContentVO>> listHotContent(CategoryLevelEnum levelEnum, String category, int count);
 
     /**
      * 分页查询某一分类下内容

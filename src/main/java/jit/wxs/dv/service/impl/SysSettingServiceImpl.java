@@ -50,7 +50,7 @@ public class SysSettingServiceImpl extends ServiceImpl<SysSettingMapper, SysSett
     }
 
     @Override
-    public ResultVO getResInfo() {
+    public ResultVO<Map> getResInfo() {
         Map<String, String> map = new HashMap<>(16);
         map.put("resContent", getResContent());
         map.put("resThumbnail", getResThumbnail());

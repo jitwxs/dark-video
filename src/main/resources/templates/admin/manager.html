@@ -6,18 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>设置中心 - Dark Video</title>
     <link th:href="@{/assets/zui/css/zui.min.css}" rel="stylesheet">
+    <link th:href="@{/assets/zui/lib/datagrid/zui.datagrid.min.css}" rel="stylesheet">
     <link th:href="@{/assets/css/common.css}" rel="stylesheet">
 </head>
 <body>
 
 <nav th:replace="common/nav::html"></nav>
 
-<div class="container">
+<div class="container-fluid">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active"><a href="#res_tab" aria-controls="res_setting" role="tab" data-toggle="tab">资源设置</a></li>
         <li role="presentation"><a href="#carousel_tab" aria-controls="index_carousel" role="tab" data-toggle="tab">轮播图设置</a></li>
         <li role="presentation"><a href="#password_tab" aria-controls="password_carousel" role="tab" data-toggle="tab">密码设置</a></li>
+        <li role="presentation"><a href="#content_tab" aria-controls="content_carousel" role="tab" data-toggle="tab">内容管理</a></li>
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
@@ -65,7 +67,7 @@
                 </div>
             </div>
         </div>
-        <div role="tabpanel" class="tab-pane fade in" id="password_tab">
+        <div role="tabpanel" class="tab-pane fade" id="password_tab">
             <div class="panel panel-info">
                 <div class="panel-body">
                     <div class="input-group">
@@ -80,6 +82,21 @@
                 </div>
             </div>
         </div>
+        <div role="tabpanel" class="tab-pane fade" id="content_tab">
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div id="contentDataGrid" class="datagrid" data-ride="datagrid">
+                        <div class="input-control search-box search-box-circle has-icon-left has-icon-right" id="searchboxExample2" style="margin-bottom: 10px; max-width: 300px">
+                            <input id="inputSearchExample2" type="search" class="form-control search-input" placeholder="搜索名称">
+                            <label for="inputSearchExample2" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
+                            <a href="#" class="input-control-icon-right search-clear-btn"><i class="icon icon-remove"></i></a>
+                        </div>
+                        <div class="datagrid-container"></div>
+                        <div class="pager"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -87,6 +104,7 @@
 <script th:src="@{/assets/js/http.js}"></script>
 <script th:src="@{/assets/layer/layer.js}"></script>
 <script th:src="@{/assets/zui/js/zui.min.js}"></script>
+<script th:src="@{/assets/zui/lib/datagrid/zui.datagrid.min.js}"></script>
 <script th:inline = "javascript" >
     /*<![CDATA[*/
     var sessionId = [[${session.sessionId}]];
@@ -164,6 +182,34 @@
 
         // 连接WebSocket
         createWebSocket(wsUrl);
+    });
+
+    $('#contentDataGrid').datagrid({
+        dataSource: {
+            cols:[
+                {name: 'id', label: 'ID', width: 0.3},
+                {name: 'name', label: '名称', width: 0.3},
+                {name: 'firstCategoryName', label: '一级目录', width: 109, sort:false},
+                {name: 'secondCategoryName', label: '二级目录', width: 109, sort:false},
+                {name: 'type', label: '类型'},
+                {name: 'click', label: '点击量'},
+                {name: 'commentCount', label: '评论数', sort:false},
+                {name: 'author', label: '上传用户', width: 109, sort:false},
+                {name: 'createDate', label: '上传时间', width: 0.1},
+            ],
+            remote: function(params) {
+                return {
+                    url: 'content/list',
+                    type: 'GET',
+                    dataType: 'json'
+                };
+            }
+        },
+        states: {
+            pager: {page: 1, recPerPage: 15}
+        },
+        sortable: true,
+        height: 'page'
     });
 
     // 生成内容索引

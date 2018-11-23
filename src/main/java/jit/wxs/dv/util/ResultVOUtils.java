@@ -8,16 +8,16 @@ import jit.wxs.dv.domain.vo.ResultVO;
  * @since 2018/6/6 0:42
  */
 public class ResultVOUtils {
-    public static ResultVO success(Object data) {
-        return new ResultVO(ResultEnum.OK.getCode(),ResultEnum.OK.getMessage(), data);
+    public static <T> ResultVO<T> success(T data) {
+        return new ResultVO<>(ResultEnum.OK.getCode(),ResultEnum.OK.getMessage(), data);
     }
 
     public static ResultVO successWithMsg(String message) {
         return success(message, null);
     }
 
-    public static ResultVO success(String message, Object data) {
-        return new ResultVO(ResultEnum.OK.getCode(), message, data);
+    public static <T> ResultVO<T> success(String message, T data) {
+        return new ResultVO<>(ResultEnum.OK.getCode(), message, data);
     }
 
     public static ResultVO success() {

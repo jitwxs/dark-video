@@ -34,7 +34,7 @@
                     <span class="text-muted" th:text="${#dates.format(later.contentVO.createDate, 'yyyy-MM-dd HH:mm:ss')}"></span> &nbsp;&nbsp;
                     <span class="text-muted" th:if="${later.contentVO.firstCategoryName}" th:text="${'| ' + later.contentVO.firstCategoryName}"></span>
                     <span class="text-muted" th:if="${later.contentVO.secondCategoryName}" th:text="${'| ' + later.contentVO.secondCategoryName}"></span> &nbsp;
-                    <button class="btn ml32" th:onclick="${'removeLater(&quot;'+later.id+'&quot;)'}">移除记录</button>
+                    <button class="btn ml32" th:onclick="${'removeLater(&quot;'+later.id+'&quot;,this)'}">移除记录</button>
                 </div>
             </div>
         </div>
@@ -59,10 +59,11 @@
         }
     });
 
-    function removeLater(id) {
+    function removeLater(id, obj) {
         sendJson("delete", "/content/later/" + id, null, false, function (res) {
                 if (res.code === 0) {
                     layer.msg("记录已删除。", {icon: 1});
+                    $(obj).parent().parent().parent().remove();
                 } else {
                     layer.msg(res.message, {icon: 2});
                 }

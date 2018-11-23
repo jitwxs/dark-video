@@ -33,7 +33,7 @@
                     <span class="text-muted" th:text="${#dates.format(content.createDate, 'yyyy-MM-dd HH:mm:ss')}"></span> &nbsp;&nbsp;
                     <span class="text-muted" th:if="${content.firstCategoryName}" th:text="${'| ' + content.firstCategoryName}"></span>
                     <span class="text-muted" th:if="${content.secondCategoryName}" th:text="${'| ' + content.secondCategoryName}"></span> &nbsp;
-                    <button class="btn ml32" th:if="${!content.hasLookAfter}" th:onclick="${'lookLater(&quot;'+content.id+'&quot;)'}">稍后再看</button>
+                    <button class="btn ml32" th:if="${!content.hasLookAfter}" th:onclick="${'lookLater(&quot;'+content.id+'&quot;,this)'}">稍后再看</button>
                 </div>
             </div>
         </div>
@@ -57,10 +57,11 @@
         }
     });
 
-    function lookLater(id) {
+    function lookLater(id,obj) {
         sendJson("post", "/content/later", {contentId:id}, false, function (res) {
                 if (res.code === 0) {
                     layer.msg("已添加到稍后再看。", {icon: 1});
+                    $(obj).remove();
                 } else {
                     layer.msg(res.message, {icon: 2});
                 }

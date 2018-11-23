@@ -87,7 +87,7 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     }
 
     @Override
-    public ResultVO listLatestContent(CategoryLevelEnum levelEnum, String category, int count) {
+    public ResultVO<List<ContentVO>> listLatestContent(CategoryLevelEnum levelEnum, String category, int count) {
         List<DvContent> selectList = contentMapper.selectList(new EntityWrapper<DvContent>()
                 .eq(levelEnum.getMessage(), category)
                 .orderBy("create_date",false)
@@ -97,7 +97,7 @@ public class DvContentServiceImpl extends ServiceImpl<DvContentMapper, DvContent
     }
 
     @Override
-    public ResultVO listHotContent(CategoryLevelEnum levelEnum, String category, int count) {
+    public ResultVO<List<ContentVO>> listHotContent(CategoryLevelEnum levelEnum, String category, int count) {
         List<DvContent> selectList = contentMapper.selectList(new EntityWrapper<DvContent>()
                 .eq(levelEnum.getMessage(), category)
                 .orderBy("click",false)
